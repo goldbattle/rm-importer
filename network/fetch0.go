@@ -22,6 +22,9 @@ func fetch0() {
 
 		cmd := exec.Command("op", "document", "create", "--title", "hello world", "--file-name", "hello world.txt", "--format", "json")
 		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		go func() {
 			defer stdin.Close()

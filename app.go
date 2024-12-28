@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"remarkable-1p-sync/network"
 )
 
@@ -22,13 +21,6 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	fmt.Printf("hello!!")
-	return fmt.Sprintf("Hello %s, It's show time!", name)
-}
-
-func (a *App) ReadFiles() []network.DocInfo {
-	fmt.Printf("hello world!")
+func (a *App) ReadFiles() ([]network.DocInfo, error) {
 	return network.ReadFiles()
 }
