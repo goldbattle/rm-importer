@@ -2,7 +2,7 @@ module remarkable-1p-sync
 
 go 1.21
 
-toolchain go1.22.9
+toolchain go1.22.10
 
 require github.com/wailsapp/wails/v2 v2.9.2
 
