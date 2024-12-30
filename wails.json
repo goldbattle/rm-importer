@@ -1,13 +1,13 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "remarkable-1p-sync",
-  "outputfilename": "remarkable-1p-sync",
+  "name": "myproject",
+  "outputfilename": "myproject",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
-    "name": "Ihor Chovpan",
+    "name": "Igor Chovpan",
     "email": "i.chovpan@gmail.com"
   }
 }

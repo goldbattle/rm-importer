@@ -1,4 +1,4 @@
-module remarkable-1p-sync
+module myproject
 
 go 1.21
 

@@ -15,11 +15,13 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
+	
+
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "remarkable-1p-sync",
-		Width:  1024,
-		Height: 768,
+		Title:  "rm1p",
+		Width:  700,
+		Height: 700,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

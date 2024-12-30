@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"remarkable-1p-sync/network"
+	"myproject/network"
 )
 
 // App struct
@@ -23,4 +23,8 @@ func (a *App) startup(ctx context.Context) {
 
 func (a *App) ReadFiles() ([]network.DocInfo, error) {
 	return network.ReadFiles()
+}
+
+func (a *App) IsIpValid(s string) bool {
+	return network.IsIpValid(s)
 }
