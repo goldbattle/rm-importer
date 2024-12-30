@@ -3,15 +3,17 @@ package network
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
 )
 
+type DocId = string
 type DocInfo struct {
 	// Required
-	Id       string
-	ParentId string
+	Id       DocId
+	ParentId DocId
 	IsFolder bool
 	Name     string
 
@@ -21,9 +23,7 @@ type DocInfo struct {
 	FileType     *string
 }
 
-var tablet_addr = "10.11.99.1"
-
-func ParseFilesResponse(bytes []byte) ([]DocInfo, error) {
+func parseDocsResponse(bytes []byte) ([]DocInfo, error) {
 	data := []map[string]interface{}{}
 	err := json.Unmarshal(bytes, &data)
 
@@ -61,7 +61,11 @@ func ParseFilesResponse(bytes []byte) ([]DocInfo, error) {
 	return result, nil
 }
 
-func ReadFiles() ([]DocInfo, error) {
+func readDocs(tablet_addr string) ([]DocInfo, error) {
+	if !IsIpValid(tablet_addr) {
+		return nil, fmt.Errorf("readDocs error: the IP address is invalid")
+	}
+
 	directories := []string{""}
 	result := []DocInfo{}
 
@@ -85,7 +89,7 @@ func ReadFiles() ([]DocInfo, error) {
 			return nil, err
 		}
 
-		elements, err := ParseFilesResponse(respBytes)
+		elements, err := parseDocsResponse(respBytes)
 		if err != nil {
 			return nil, err
 		}
@@ -100,4 +104,36 @@ func ReadFiles() ([]DocInfo, error) {
 	}
 
 	return result, nil
+}
+
+type RmReader struct {
+	/* For an collection with DocId 'id', map[id] stores elements in that folder.
+	   For a root element the 'id' is empty
+	*/
+	items map[DocId][]DocInfo
+}
+
+/*
+Reads all the items the rM tablet and stores them.
+Past items are cleared in case read() was called previously.
+*/
+func (r *RmReader) Read(tablet_addr string) error {
+	r.items = make(map[string][]DocInfo)
+	docs, err := readDocs(tablet_addr)
+	if err != nil {
+		return err
+	}
+
+	for _, doc := range docs {
+		r.items[doc.ParentId] = append(r.items[doc.ParentId], doc)
+	}
+
+	return nil
+}
+
+func (r *RmReader) GetFolder(id DocId) []DocInfo {
+	if items, ok := r.items[id]; ok {
+		return items
+	}
+	return []DocInfo{}
 }

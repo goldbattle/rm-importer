@@ -1,4 +1,4 @@
-module myproject
+module remarkable-1password-sync
 
 go 1.21
 

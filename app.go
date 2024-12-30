@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"myproject/network"
+	"remarkable-1password-sync/network"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx       context.Context
+	rm_reader network.RmReader
 }
 
 // NewApp creates a new App application struct
@@ -21,8 +22,12 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) ReadFiles() ([]network.DocInfo, error) {
-	return network.ReadFiles()
+func (a *App) ReadTabletDocs(tablet_addr string) error {
+	return a.rm_reader.Read(tablet_addr)
+}
+
+func (a *App) GetTabletFolder(id network.DocId) []network.DocInfo {
+	return a.rm_reader.GetFolder(id)
 }
 
 func (a *App) IsIpValid(s string) bool {
