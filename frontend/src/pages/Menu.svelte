@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Alert, Button, P, Input, Label, Spinner} from 'flowbite-svelte';
   import { ArrowRightOutline, InfoCircleSolid, TabletSolid, CloseOutline } from 'flowbite-svelte-icons';
-  import { ReadTabletDocs, IsIpValid} from '../wailsjs/go/main/App.js';
+  import { ReadTabletDocs, IsIpValid} from '../../wailsjs/go/main/App.js';
+  import { push } from 'svelte-spa-router';
 
   let rmIp: string = $state("10.11.99.1");
   let isRmIpValid: boolean = $state(true);
@@ -21,7 +22,7 @@
     }
     loading = true;
     ReadTabletDocs(rmIp)
-      .then((_: any) => console.log("success"))
+      .then((_: any) => push('/files/'))
       .catch((err: Error) => {
         console.log("Couldn't connect to reMarkable tablet! Make sure the IP address is correct.");
         error_message = err.toString()
