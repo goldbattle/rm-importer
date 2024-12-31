@@ -6,7 +6,7 @@
 
   const routes = {
     '/': Menu,
-    '/files/:id?': FileSelection,
+    '/files': FileSelection,
   };
 </script>
 

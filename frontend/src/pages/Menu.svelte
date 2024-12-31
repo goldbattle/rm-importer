@@ -22,7 +22,7 @@
     }
     loading = true;
     ReadTabletDocs(rmIp)
-      .then((_: any) => push('/files/'))
+      .then((_: any) => push('/files'))
       .catch((err: Error) => {
         console.log("Couldn't connect to reMarkable tablet! Make sure the IP address is correct.");
         error_message = err.toString()
