@@ -8,22 +8,16 @@
     let path: string[] = $state([]);
     let links: DocInfo[] = $state([]);
     let checkboxes = $state({});
+    let checked_checkboxes = $state(0);
+
     let export_button_disabled = $derived.by(() => {
-        for (const [_, value] of Object.entries(checkboxes)) {
-            if (value)
-                return false;
-        }
-        return true;
+        return checked_checkboxes == 0;
     });
 
     $effect(() => {
         GetTabletFolder(id).then((result) => {
             links = result;
         });
-    });
-
-    $effect(() => {
-        console.log(checkboxes);
     });
 
     const onBack = () => {
@@ -34,6 +28,15 @@
             id = '';
         }
     }
+
+    const onCheckboxClick = (item: DocInfo, checked: boolean) => {
+        checkboxes[item] = checked;
+        if (checked) {
+            checked_checkboxes += 1;
+        } else {
+            checked_checkboxes -= 1;
+        }
+    };
 </script>
 
 <div style="height: fit-content;">
@@ -50,7 +53,9 @@
         {#if links.length > 0}
         <Listgroup items={links} let:item active={false}>
             <div class="flex flex-row justify-start items-center">
-                <Checkbox bind:checked={checkboxes[item.Id]} class="mr-2"></Checkbox>
+                <Checkbox checked={checkboxes[item.Id]} 
+                          on:click={(e) => onCheckboxClick(item.Id, e.target.checked)} 
+                class="mr-2" />
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
                      onclick={()=>{
                         if (item.IsFolder) {
