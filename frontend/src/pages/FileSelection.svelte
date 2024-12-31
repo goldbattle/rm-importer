@@ -7,11 +7,23 @@
     let id = $state("");
     let path: string[] = $state([]);
     let links: DocInfo[] = $state([]);
+    let checkboxes = $state({});
+    let export_button_disabled = $derived.by(() => {
+        for (const [_, value] of Object.entries(checkboxes)) {
+            if (value)
+                return false;
+        }
+        return true;
+    });
 
     $effect(() => {
         GetTabletFolder(id).then((result) => {
             links = result;
         });
+    });
+
+    $effect(() => {
+        console.log(checkboxes);
     });
 
     const onBack = () => {
@@ -38,7 +50,7 @@
         {#if links.length > 0}
         <Listgroup items={links} let:item active={false}>
             <div class="flex flex-row justify-start items-center">
-                <Checkbox class="mr-2"></Checkbox>
+                <Checkbox bind:checked={checkboxes[item.Id]} class="mr-2"></Checkbox>
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
                      onclick={()=>{
                         if (item.IsFolder) {
@@ -58,6 +70,6 @@
         {/if}
     </main>
     <div class="fixed bottom-7 right-10">
-        <Button pill size="xl">Export</Button>
+        <Button pill size="xl" disabled={export_button_disabled}>Export</Button>
     </div>
 </div>
