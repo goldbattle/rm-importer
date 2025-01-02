@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"remarkable-1password-sync/backend"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
 type App struct {
-	ctx       context.Context
-	rm_reader backend.RmReader
+	ctx         context.Context
+	rm_reader   backend.RmReader
+	tablet_addr string
 }
 
 // NewApp creates a new App application struct
@@ -23,6 +26,7 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) ReadTabletDocs(tablet_addr string) error {
+	a.tablet_addr = tablet_addr
 	return a.rm_reader.Read(tablet_addr)
 }
 
@@ -36,4 +40,22 @@ func (a *App) IsIpValid(s string) bool {
 
 func (a *App) GetElementsByIds(ids []backend.DocId) []backend.DocInfo {
 	return a.rm_reader.GetElementsByIds(ids)
+}
+
+func (a *App) ExportPdfs(ids []backend.DocId) {
+	// possible states of export: downloading, finished, error
+	for _, id := range ids {
+		runtime.EventsEmit(a.ctx, "downloading", id)
+
+		res, err := backend.ExportPdf(a.tablet_addr, a.rm_reader.GetElementById(id))
+
+		if err == nil {
+			runtime.EventsEmit(a.ctx, "finished", id)
+		} else {
+			runtime.EventsEmit(a.ctx, "error", id, err.Error())
+			break
+		}
+
+		runtime.LogDebug(a.ctx, res)
+	}
 }

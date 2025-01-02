@@ -20,6 +20,7 @@
     if (loading) {
       return;
     }
+    show_error = false;
     loading = true;
     ReadTabletDocs(rmIp)
       .then((_: any) => push('/files'))
@@ -35,21 +36,18 @@
 
 </script>
 
+{#key show_error}
 {#if show_error}
-<Alert color="red" on:close={() => console.log("close")} dismissable={false}
+<Alert color="red" dismissable={true}
   class="border-t-4 top-0 absolute left-1/2 transform -translate-x-1/2 w-full">
-  <Button class="p-2 absolute top-3 right-3 bg-transparent hover:bg-red-200"
-    onclick={() => show_error = false}>
-    <CloseOutline color=red></CloseOutline>
-  </Button>
   <div class="flex items-center gap-1">
     <InfoCircleSolid class="w-5 h-5" />
     <span class="text-lg font-medium">Couldn't connect to reMarkable!</span>
   </div>
   <p class="mt-2 mb-4 text-sm">{error_message}</p>
-  
 </Alert>
 {/if}
+{/key}
 
 <main class="flex flex-col h-full justify-center items-center content-center">
   <P size="3xl">remarkable-1password-sync</P>

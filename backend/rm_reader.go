@@ -152,3 +152,7 @@ func (r *RmReader) GetElementsByIds(ids []DocId) []DocInfo {
 	}
 	return result
 }
+
+func (r *RmReader) GetElementById(id DocId) DocInfo {
+	return r.docById[id]
+}

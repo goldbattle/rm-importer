@@ -28,7 +28,7 @@
 
     const onExportClick = () => {
         storeCheckedFiles();
-        push('/export-confirmation');
+        push('/export');
     };
 </script>
 
