@@ -1,24 +1,21 @@
 <script lang="ts">
-    import { Button, Checkbox, Heading, Listgroup, Navbar, P, Toolbar, ToolbarButton } from "flowbite-svelte";
-    import { ArrowLeftOutline, ArrowUpOutline, CheckOutline, FileLinesOutline, FileLinesSolid, FileOutline, FolderArrowRightSolid, FolderOutline, FolderSolid, ImageOutline, MapPinAltSolid, PaperClipOutline } from "flowbite-svelte-icons";
-    import { push, location, link } from "svelte-spa-router";
+    import { Button, Checkbox, Listgroup, Navbar, P, ToolbarButton } from "flowbite-svelte";
+    import { ArrowUpOutline, FileLinesSolid, FolderSolid } from "flowbite-svelte-icons";
     import { GetTabletFolder } from "../../wailsjs/go/main/App";
-
+    import { isChecked, setChecked, isExportButtonDisabled, storeCheckedFiles } from "../logic/checkboxes.svelte";
+    import { push } from "svelte-spa-router";
+    
     let id = $state("");
     let path: string[] = $state([]);
-    let links: DocInfo[] = $state([]);
-    let checkboxes = $state({});
-    let checked_checkboxes = $state(0);
+    let items: DocInfo[] = $state([]);
 
-    let export_button_disabled = $derived.by(() => {
-        return checked_checkboxes == 0;
-    });
-
-    $effect(() => {
+    const getFolderData = () => {
         GetTabletFolder(id).then((result) => {
-            links = result;
+            items = result;
         });
-    });
+    };
+
+    $effect(getFolderData);
 
     const onBack = () => {
         if (path.length > 0) {
@@ -27,15 +24,11 @@
         } else {
             id = '';
         }
-    }
+    };
 
-    const onCheckboxClick = (item: DocInfo, checked: boolean) => {
-        checkboxes[item] = checked;
-        if (checked) {
-            checked_checkboxes += 1;
-        } else {
-            checked_checkboxes -= 1;
-        }
+    const onExportClick = () => {
+        storeCheckedFiles();
+        push('/export-confirmation');
     };
 </script>
 
@@ -44,18 +37,19 @@
         <div class={path.length == 0 ? "invisible": ""}>
             <ToolbarButton color="blue" name="Back" onclick={onBack}> <ArrowUpOutline class="w-7 h-7" /></ToolbarButton>
         </div>
-        <h1 class="font-bold">Choose items to export</h1>
+        <h1 class="font-bold">Choose files to export</h1>
         <div>
             <ToolbarButton class="invisible"><ArrowUpOutline class="w-7 h-7" /></ToolbarButton>
         </div>
     </Navbar>
     <main class="pl-10 pr-10 pt-3 pb-3">
-        {#if links.length > 0}
-        <Listgroup items={links} let:item active={false}>
+        {#if items.length > 0}
+        <Listgroup {items} let:item active={false}>
             <div class="flex flex-row justify-start items-center">
-                <Checkbox checked={checkboxes[item.Id]} 
-                          on:click={(e) => onCheckboxClick(item.Id, e.target.checked)} 
-                class="mr-2" />
+                <Checkbox checked={isChecked(item.Id)} 
+                            on:click={(e) => setChecked(item.Id, e.target.checked)}
+                class={item.IsFolder ? "invisible mr-2" : "mr-2"} />
+
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
                      onclick={()=>{
                         if (item.IsFolder) {
@@ -75,6 +69,7 @@
         {/if}
     </main>
     <div class="fixed bottom-7 right-10">
-        <Button pill size="xl" disabled={export_button_disabled}>Export</Button>
+        <Button pill size="xl" disabled={isExportButtonDisabled()}
+                onclick={onExportClick}>Export</Button>
     </div>
 </div>

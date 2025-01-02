@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"remarkable-1password-sync/network"
+	"remarkable-1password-sync/backend"
 )
 
 // App struct
 type App struct {
 	ctx       context.Context
-	rm_reader network.RmReader
+	rm_reader backend.RmReader
 }
 
 // NewApp creates a new App application struct
@@ -26,10 +26,14 @@ func (a *App) ReadTabletDocs(tablet_addr string) error {
 	return a.rm_reader.Read(tablet_addr)
 }
 
-func (a *App) GetTabletFolder(id network.DocId) []network.DocInfo {
+/*func (a *App) GetFolderCheckboxes(id network.DocId) []bool {
+	return a.checkboxes.Get(id, &a.rm_reader)
+}*/
+
+func (a *App) GetTabletFolder(id backend.DocId) []backend.DocInfo {
 	return a.rm_reader.GetFolder(id)
 }
 
 func (a *App) IsIpValid(s string) bool {
-	return network.IsIpValid(s)
+	return backend.IsIpValid(s)
 }

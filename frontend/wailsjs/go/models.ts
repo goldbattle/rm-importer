@@ -1,4 +1,4 @@
-export namespace network {
+export namespace backend {
 	
 	export class DocInfo {
 	    Id: string;
