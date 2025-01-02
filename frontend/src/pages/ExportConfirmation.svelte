@@ -30,7 +30,9 @@
             <div class="flex flex-row justify-start items-center w-full">
                 <FileLinesSolid class="mr-1" size="lg" />
                 <P size="xl">{item.Name}</P>
+                {#if item.LastModified}
                 <P size="md" class="ml-auto">Last modified: {item.LastModified}</P>
+                {/if}
             </div>
         </Listgroup>
     {/if}
