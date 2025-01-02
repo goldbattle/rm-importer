@@ -110,7 +110,8 @@ type RmReader struct {
 	/* For an collection with DocId 'id', map[id] stores elements in that folder.
 	   For a root element the 'id' is empty
 	*/
-	items map[DocId][]DocInfo
+	items   map[DocId][]DocInfo
+	docById map[DocId]DocInfo
 }
 
 /*
@@ -119,6 +120,8 @@ Past items are cleared in case read() was called previously.
 */
 func (r *RmReader) Read(tablet_addr string) error {
 	r.items = make(map[string][]DocInfo)
+	r.docById = make(map[string]DocInfo)
+
 	docs, err := readDocs(tablet_addr)
 	if err != nil {
 		return err
@@ -126,6 +129,10 @@ func (r *RmReader) Read(tablet_addr string) error {
 
 	for _, doc := range docs {
 		r.items[doc.ParentId] = append(r.items[doc.ParentId], doc)
+	}
+
+	for _, doc := range docs {
+		r.docById[doc.Id] = doc
 	}
 
 	return nil
@@ -136,4 +143,12 @@ func (r *RmReader) GetFolder(id DocId) []DocInfo {
 		return items
 	}
 	return []DocInfo{}
+}
+
+func (r *RmReader) GetElementsByIds(ids []DocId) []DocInfo {
+	result := []DocInfo{}
+	for _, id := range ids {
+		result = append(result, r.docById[id])
+	}
+	return result
 }
