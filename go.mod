@@ -1,4 +1,4 @@
-module remarkable-1password-sync
+module rm-exporter
 
 go 1.21
 

@@ -17,7 +17,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "remarkable-1password-sync",
+		Title:  "rm-exporter",
 		Width:  700,
 		Height: 700,
 		AssetServer: &assetserver.Options{

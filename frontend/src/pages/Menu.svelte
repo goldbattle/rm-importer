@@ -50,7 +50,7 @@
 {/key}
 
 <main class="flex flex-col h-full justify-center items-center content-center">
-  <P size="3xl">remarkable-1password-sync</P>
+  <P size="3xl">rm-exporter</P>
   <div class="flex flex-col flex-wrap content-center items-center justify-between h-44">
     <Label class="space-y-3 m-5">
       <span>Enter the IP address of your reMarkable tablet:</span>

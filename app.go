@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"remarkable-1password-sync/backend"
+	"rm-exporter/backend"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )

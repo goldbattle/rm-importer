@@ -8,11 +8,11 @@
 
     let exportIds: string[] = get(filesToExport);
     let exportItems: DocInfo[] = $state([]);
+    let exportItemState: {[key: string]: string;} = $state({});
+
     let exporting: boolean = $state(false);
-    let exportState: {[key: string]: string;} = $state({});
     let errorMessage: string = $state("hello");
     let showError: boolean = $state(false);
-    let showExportMessage = $state(true);
 
     $effect(() => {
         GetElementsByIds(exportIds)
@@ -23,21 +23,20 @@
 
     const onProceed = () => {
         showError = false;
-        showExportMessage = false;
         exporting = true;
         ExportPdfs(exportIds);
     };
 
     EventsOn("downloading", (id: string) => {
-        exportState[id] = "downloading";
+        exportItemState[id] = "downloading";
     });
 
     EventsOn("finished", (id: string) => {
-        exportState[id] = "finished";
+        exportItemState[id] = "finished";
     });
 
     EventsOn("error", (id: string, msg: string) => {
-        exportState[id] = "error";
+        exportItemState[id] = "error";
         showError = true;
         errorMessage = msg;
         exporting = false;
@@ -58,23 +57,20 @@
     {/if}
     {/key}
 
-    {#if showExportMessage}
-        <Navbar color="blue" class="sticky top-0">
-            {#if exporting}
-            <h1 class="font-bold m-auto">Following items will be exported in .pdf format:</h1>
-            {/if}
-        </Navbar>
-    {/if}
+    <Navbar color="blue" class="sticky top-0">
+        <h1 class="font-bold m-auto">Export</h1>
+    </Navbar>
+
     {#if exportItems.length > 0}
         <Listgroup items={exportItems} let:item active={false}>
             <div class="flex flex-row justify-start items-center w-full">
                 <FileLinesSolid class="mr-1" size="lg" />
                 <P size="xl">{item.Name}</P>
-                {#if exportState[item.Id] === "downloading"}
+                {#if exportItemState[item.Id] === "downloading"}
                     <Spinner class="ml-auto" />
-                {:else if exportState[item.Id] === "finished"}
+                {:else if exportItemState[item.Id] === "finished"}
                     <CheckOutline class="ml-auto" color="green"/>
-                {:else if exportState[item.Id] === "error"}
+                {:else if exportItemState[item.Id] === "error"}
                     <ExclamationCircleOutline class="ml-auto" color="red"/>
                 {/if}
             </div>
