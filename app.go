@@ -12,6 +12,7 @@ type App struct {
 	ctx         context.Context
 	rm_reader   backend.RmReader
 	tablet_addr string
+	selection   backend.FileSelection
 }
 
 // NewApp creates a new App application struct
@@ -27,11 +28,22 @@ func (a *App) startup(ctx context.Context) {
 
 func (a *App) ReadTabletDocs(tablet_addr string) error {
 	a.tablet_addr = tablet_addr
-	return a.rm_reader.Read(tablet_addr)
+
+	err := a.rm_reader.Read(tablet_addr)
+	if err != nil {
+		return err
+	}
+
+	a.selection = backend.NewFileSelection(a.rm_reader.GetChildren())
+	return nil
 }
 
 func (a *App) GetTabletFolder(id backend.DocId) []backend.DocInfo {
 	return a.rm_reader.GetFolder(id)
+}
+
+func (a *App) GetTabletFolderSelection(id backend.DocId) []backend.DocInfo {
+
 }
 
 func (a *App) IsIpValid(s string) bool {
@@ -58,4 +70,8 @@ func (a *App) ExportPdfs(ids []backend.DocId) {
 
 		runtime.LogDebug(a.ctx, res)
 	}
+}
+
+func (a *App) OnItemSelect(item backend.DocInfo, selection bool) {
+	a.selection.Select(item, selection)
 }

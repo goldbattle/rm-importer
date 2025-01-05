@@ -17,6 +17,11 @@
         });
     });
 
+    const checkUpdate = (item: DocInfo, value: boolean) => {
+        checked[id] = value;
+        OnItemSelect(item, value);
+    };
+
     const onBack = () => {
         if (path.length > 0) {
             id = path[path.length - 1];
@@ -54,10 +59,8 @@
         <Listgroup {items} let:item active={false}>
             <div class="flex flex-row justify-start items-center">
 
-                <Checkbox bind:checked={}
-                <Checkbox checked={isChecked(item.Id)} 
-                            on:click={(e) => setChecked(item.Id, e.target.checked)}
-                class={item.IsFolder ? "invisible mr-2" : "mr-2"} />
+                <Checkbox bind:checked={() => checked[item.Id], (v) => checkUpdate(item, v)}
+                          class="mr-2" />
 
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
                      onclick={() => onItemClick(item)}>

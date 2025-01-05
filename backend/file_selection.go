@@ -8,18 +8,14 @@ const (
 	Selected      SelectionStatus = iota
 )
 
-type children struct {
-	ids                     []DocId
-	selectedOrIndeterminate int
-}
-
 type FileSelection struct {
-	children     map[DocId]children
+	children     map[DocId][]DocId
 	docSelection map[DocId]SelectionStatus
+	parent       map[DocId]DocId
 }
 
-func New(c map[DocId][]DocInfo) FileSelection {
-	m := make(map[DocId]children)
+func NewFileSelection(c map[DocId][]DocInfo) FileSelection {
+	m := make(map[DocId][]DocId)
 	for parentId, items := range c {
 
 		ids := []DocId{}
@@ -27,15 +23,20 @@ func New(c map[DocId][]DocInfo) FileSelection {
 			ids = append(ids, item.Id)
 		}
 
-		m[parentId] = children{ids, 0}
+		m[parentId] = ids
 	}
 
-	return FileSelection{m, make(map[string]SelectionStatus)}
+	parent := make(map[DocId]DocId)
+	for parentId, items := range c {
+		for _, item := range items {
+			parent[item.Id] = parentId
+		}
+	}
+
+	return FileSelection{m, make(map[string]SelectionStatus), parent}
 }
 
-func (f *FileSelection) setDocSelection(parentId DocId, id DocId, selection bool) {
-	prev_status := f.docSelection[id]
-
+func (f *FileSelection) setDocSelection(id DocId, selection bool) {
 	var status SelectionStatus
 	if !selection {
 		status = NotSelected
@@ -43,36 +44,59 @@ func (f *FileSelection) setDocSelection(parentId DocId, id DocId, selection bool
 		status = Selected
 	}
 
-	if id == "" {
-		return
-	}
-
-	diff := 0
-	if prev_status == NotSelected && status == Selected {
-		diff = 1
-	} else if (prev_status == Selected || prev_status == Indeterminate) && status == NotSelected {
-		diff = -1
-	}
-	if diff != 0 {
-		entry := f.children[parentId]
-		entry.selectedOrIndeterminate += diff
-		f.children[parentId] = entry
-	}
+	f.docSelection[id] = status
 }
 
-func (f *FileSelection) dfs(parent DocId, item DocId, selection bool) {
-	f.setDocSelection(parent, item, selection)
+func (f *FileSelection) dfs(item DocId, selection bool) {
+	f.setDocSelection(item, selection)
 
-	if c, ok := f.children[item]; ok {
-		for _, child := range c.ids {
-			f.dfs(item, child, selection)
+	if ids, ok := f.children[item]; ok {
+		for _, child := range ids {
+			f.dfs(child, selection)
 		}
 	}
 }
 
-func (f *FileSelection) OnSelect(item DocInfo, selection bool) {
-	// TODO what if item is root with empty id?
-	/* Set the selection value to all items in the subtree of 'item'. */
-	f.dfs(item.ParentId, item.Id, selection)
+func (f *FileSelection) updateParents(id DocId, isFolder bool) {
+	for {
+		if isFolder {
+			ids := f.children[id]
+			s, i := 0, 0
+			for _, id := range ids {
+				if f.docSelection[id] == Selected {
+					s += 1
+				}
+				if f.docSelection[id] == Indeterminate {
+					i += 1
+				}
+			}
+			if s == 0 && i == 0 {
+				f.docSelection[id] = NotSelected
+			} else if s == len(ids) {
+				f.docSelection[id] = Selected
+			} else {
+				f.docSelection[id] = Indeterminate
+			}
+		}
 
+		if id == "" {
+			break
+		}
+		id = f.parent[id]
+		isFolder = true
+	}
+}
+
+func (f *FileSelection) Select(item DocInfo, selection bool) {
+	/* Set the selection value to all items in the subtree of 'item'. */
+	f.dfs(item.Id, selection)
+
+	/* Number of selectedOrIndeterminate children could change,
+	   which could in turn change the state of the parent itself.
+	   This method iteratively updates parents' states up to root. */
+	f.updateParents(item.Id, item.IsFolder)
+}
+
+func (f *FileSelection) GetSelection(item DocInfo) {
+	f.
 }
