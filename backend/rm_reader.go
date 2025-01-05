@@ -110,7 +110,8 @@ type RmReader struct {
 	/* For an collection with DocId 'id', map[id] stores elements in that folder.
 	   For a root element the 'id' is empty
 	*/
-	items   map[DocId][]DocInfo
+	children map[DocId][]DocInfo
+
 	docById map[DocId]DocInfo
 }
 
@@ -119,8 +120,8 @@ Reads all the items the rM tablet and stores them.
 Past items are cleared in case read() was called previously.
 */
 func (r *RmReader) Read(tablet_addr string) error {
-	r.items = make(map[string][]DocInfo)
-	r.docById = make(map[string]DocInfo)
+	r.children = make(map[DocId][]DocInfo)
+	r.docById = make(map[DocId]DocInfo)
 
 	docs, err := readDocs(tablet_addr)
 	if err != nil {
@@ -128,7 +129,7 @@ func (r *RmReader) Read(tablet_addr string) error {
 	}
 
 	for _, doc := range docs {
-		r.items[doc.ParentId] = append(r.items[doc.ParentId], doc)
+		r.children[doc.ParentId] = append(r.children[doc.ParentId], doc)
 	}
 
 	for _, doc := range docs {
@@ -139,7 +140,7 @@ func (r *RmReader) Read(tablet_addr string) error {
 }
 
 func (r *RmReader) GetFolder(id DocId) []DocInfo {
-	if items, ok := r.items[id]; ok {
+	if items, ok := r.children[id]; ok {
 		return items
 	}
 	return []DocInfo{}
@@ -155,4 +156,8 @@ func (r *RmReader) GetElementsByIds(ids []DocId) []DocInfo {
 
 func (r *RmReader) GetElementById(id DocId) DocInfo {
 	return r.docById[id]
+}
+
+func (r *RmReader) GetChildren() map[DocId][]DocInfo {
+	return r.children
 }

@@ -8,14 +8,14 @@
     let id = $state("");
     let path: string[] = $state([]);
     let items: DocInfo[] = $state([]);
+    let checked: {[key: string]: boolean} = $state({});
 
-    const getFolderData = () => {
+    // onIdUpdate
+    $effect(() => {
         GetTabletFolder(id).then((result) => {
             items = result;
         });
-    };
-
-    $effect(getFolderData);
+    });
 
     const onBack = () => {
         if (path.length > 0) {
@@ -23,6 +23,13 @@
             path.pop();
         } else {
             id = '';
+        }
+    };
+
+    const onItemClick = (item: DocInfo) => {
+        if (item.IsFolder) {
+            path.push(id);
+            id = item.Id;
         }
     };
 
@@ -46,17 +53,14 @@
         {#if items.length > 0}
         <Listgroup {items} let:item active={false}>
             <div class="flex flex-row justify-start items-center">
+
+                <Checkbox bind:checked={}
                 <Checkbox checked={isChecked(item.Id)} 
                             on:click={(e) => setChecked(item.Id, e.target.checked)}
                 class={item.IsFolder ? "invisible mr-2" : "mr-2"} />
 
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
-                     onclick={()=>{
-                        if (item.IsFolder) {
-                            path.push(id);
-                            id = item.Id;
-                        }
-                     }}>
+                     onclick={() => onItemClick(item)}>
                     {#if item.IsFolder}
                         <FolderSolid class="mr-1" size="lg" />
                     {:else}
