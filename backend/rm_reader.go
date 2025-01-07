@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
+	"strings"
 	"time"
 )
 
@@ -21,6 +23,7 @@ type DocInfo struct {
 	Bookmarked   bool
 	LastModified *time.Time
 	FileType     *string
+	Path         *string
 }
 
 func parseDocsResponse(bytes []byte) ([]DocInfo, error) {
@@ -49,7 +52,7 @@ func parseDocsResponse(bytes []byte) ([]DocInfo, error) {
 			}
 		}
 
-		if t, ok := item["FileType"].(string); ok {
+		if t, ok := item["fileType"].(string); ok {
 			info.FileType = &t
 		}
 
@@ -160,4 +163,23 @@ func (r *RmReader) GetElementById(id DocId) DocInfo {
 
 func (r *RmReader) GetChildren() map[DocId][]DocInfo {
 	return r.children
+}
+
+func (r *RmReader) GetPath(id DocId) string {
+	l := []string{}
+	for id != "" {
+		item := r.docById[id]
+		l = append(l, item.Name)
+		id = item.ParentId
+	}
+	slices.Reverse(l)
+	return strings.Join(l[:], "/")
+}
+
+func (r *RmReader) GetPaths(ids []DocId) []string {
+	result := []string{}
+	for _, id := range ids {
+		result = append(result, r.GetPath(id))
+	}
+	return result
 }

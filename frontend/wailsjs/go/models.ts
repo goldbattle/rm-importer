@@ -9,6 +9,7 @@ export namespace backend {
 	    // Go type: time
 	    LastModified?: any;
 	    FileType?: string;
+	    Path?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new DocInfo(source);
@@ -23,6 +24,7 @@ export namespace backend {
 	        this.Bookmarked = source["Bookmarked"];
 	        this.LastModified = this.convertValues(source["LastModified"], null);
 	        this.FileType = source["FileType"];
+	        this.Path = source["Path"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

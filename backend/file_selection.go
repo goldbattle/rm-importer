@@ -18,9 +18,8 @@ type FileSelection struct {
 	Parent   map[DocId]DocId
 
 	DocSelection map[DocId]SelectionStatus
-
-	/* stores documents for which the user selected the checkbox*/
-	CheckedDocs map[DocId]bool
+	Files        map[DocId]bool
+	checkedFiles int
 }
 
 func NewFileSelection(c map[DocId][]DocInfo) FileSelection {
@@ -42,7 +41,16 @@ func NewFileSelection(c map[DocId][]DocInfo) FileSelection {
 		}
 	}
 
-	return FileSelection{m, parent, make(map[string]SelectionStatus), make(map[string]bool)}
+	files := make(map[DocId]bool)
+	for _, items := range c {
+		for _, item := range items {
+			if !item.IsFolder {
+				files[item.Id] = true
+			}
+		}
+	}
+
+	return FileSelection{m, parent, make(map[string]SelectionStatus), files, 0}
 }
 
 func (f *FileSelection) setDocSelection(id DocId, selection bool) {
@@ -51,6 +59,14 @@ func (f *FileSelection) setDocSelection(id DocId, selection bool) {
 		status = NotSelected
 	} else {
 		status = Selected
+	}
+
+	if _, ok := f.Files[id]; ok {
+		if f.DocSelection[id] == Selected && !selection {
+			f.checkedFiles -= 1
+		} else if f.DocSelection[id] == NotSelected && selection {
+			f.checkedFiles += 1
+		}
 	}
 
 	f.DocSelection[id] = status
@@ -110,4 +126,22 @@ func (f *FileSelection) GetFolderSelection(id DocId) []SelectionInfo {
 		result = append(result, SelectionInfo{id, f.DocSelection[id]})
 	}
 	return result
+}
+
+func (f *FileSelection) GetItemSelection(id DocId) SelectionInfo {
+	return SelectionInfo{id, f.DocSelection[id]}
+}
+
+func (f *FileSelection) GetCheckedFiles() []DocId {
+	result := []DocId{}
+	for id := range f.Files {
+		if f.DocSelection[id] == Selected {
+			result = append(result, id)
+		}
+	}
+	return result
+}
+
+func (f *FileSelection) GetCheckedFilesCount() int {
+	return f.checkedFiles
 }

@@ -1,7 +1,21 @@
 package backend
 
-import "testing"
+import (
+	"slices"
+	"testing"
 
+	"github.com/google/go-cmp/cmp"
+)
+
+/*
+Graph sketch
+
+			 root
+	/          |           \
+
+dir1         dir2           file3
+file1      dir3 file2
+*/
 func initFileSelection() FileSelection {
 	folder1 := DocInfo{Id: "dir1", ParentId: "", IsFolder: true, Name: "folder1"}
 	folder2 := DocInfo{Id: "dir2", ParentId: "", IsFolder: true, Name: "folder2"}
@@ -17,7 +31,7 @@ func initFileSelection() FileSelection {
 }
 
 func assertAllSelected(t *testing.T, f *FileSelection, folderId DocId) {
-	for _, sel := range f.GetFolderSelection("") {
+	for _, sel := range f.GetFolderSelection(folderId) {
 		if sel.Status == Selected {
 			continue
 		}
@@ -26,11 +40,18 @@ func assertAllSelected(t *testing.T, f *FileSelection, folderId DocId) {
 }
 
 func assertAllNotSelected(t *testing.T, f *FileSelection, folderId DocId) {
-	for _, sel := range f.GetFolderSelection("") {
+	for _, sel := range f.GetFolderSelection(folderId) {
 		if sel.Status == NotSelected {
 			continue
 		}
 		t.Fatalf("After selecting root one of the items is not selected! %v", sel)
+	}
+}
+
+func assertOne(t *testing.T, f *FileSelection, id DocId, expected SelectionStatus) {
+	result := f.GetItemSelection(id)
+	if result.Status != expected {
+		t.Fatalf("assertOne failed! id: %s, result.Status: %v, expected: %v", id, result.Status, expected)
 	}
 }
 
@@ -47,4 +68,76 @@ func TestFolderSelectionRoot(t *testing.T) {
 	assertAllNotSelected(t, &f, "")
 	assertAllNotSelected(t, &f, "dir1")
 	assertAllNotSelected(t, &f, "dir2")
+}
+
+func TestSelectionSub(t *testing.T) {
+	f := initFileSelection()
+
+	f.Select("", true)
+	f.Select("dir1", false)
+	f.Select("dir2", true)
+
+	assertOne(t, &f, "", Indeterminate)
+	assertAllNotSelected(t, &f, "dir1")
+	assertAllSelected(t, &f, "dir2")
+	assertOne(t, &f, "f3", Selected)
+}
+
+func TestParentUpdate(t *testing.T) {
+	f := initFileSelection()
+	f.Select("f1", true)
+	f.Select("f2", true)
+	f.Select("f3", true)
+	assertOne(t, &f, "", Indeterminate)
+	assertOne(t, &f, "dir1", Selected)
+	assertOne(t, &f, "dir2", Indeterminate)
+	assertOne(t, &f, "dir3", NotSelected)
+}
+
+func TestParentUpdate2(t *testing.T) {
+	f := initFileSelection()
+	f.Select("f1", true)
+	f.Select("f2", true)
+	f.Select("f3", true)
+	f.Select("dir3", true)
+	assertOne(t, &f, "", Selected)
+	assertOne(t, &f, "dir1", Selected)
+	assertOne(t, &f, "dir2", Selected)
+	assertOne(t, &f, "dir3", Selected)
+}
+
+func TestSelectSimple(t *testing.T) {
+	f := initFileSelection()
+	f.Select("f1", true)
+	assertOne(t, &f, "f1", Selected)
+	assertOne(t, &f, "f2", NotSelected)
+	assertOne(t, &f, "f3", NotSelected)
+}
+
+func TestCheckedFilesRoot(t *testing.T) {
+	f := initFileSelection()
+	f.Select("", true)
+
+	result := f.GetCheckedFiles()
+	expected := []DocId{"f1", "f2", "f3"}
+	slices.Sort(result)
+	slices.Sort(expected)
+	if !cmp.Equal(result, expected) {
+		t.Fatalf("CheckedFilesRoot failed! %v", cmp.Diff(result, expected))
+	}
+}
+
+func TestCheckedFilesSub(t *testing.T) {
+	f := initFileSelection()
+	f.Select("", false)
+	f.Select("dir2", true)
+	f.Select("f3", true)
+
+	result := f.GetCheckedFiles()
+	expected := []DocId{"f2", "f3"}
+	slices.Sort(result)
+	slices.Sort(expected)
+	if !cmp.Equal(result, expected) {
+		t.Fatalf("CheckedFilesSub failed! %v", cmp.Diff(result, expected))
+	}
 }

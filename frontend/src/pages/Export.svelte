@@ -1,13 +1,11 @@
 <script lang="ts">
     import { Alert, Button, Heading, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
-    import { get } from "svelte/store";
-    import { GetElementsByIds, ExportPdfs } from '../../wailsjs/go/main/App.js';
+    import { GetElementsByIds, ExportPdfs, GetCheckedFiles } from '../../wailsjs/go/main/App.js';
     import { CheckOutline, ExclamationCircleOutline, FileLinesSolid, InfoCircleSolid } from "flowbite-svelte-icons";
     import { EventsOn } from "../../wailsjs/runtime";
     import { backend } from "../../wailsjs/go/models";
     type DocInfo = backend.DocInfo;
 
-    let exportIds: string[] = $state([]); //get(filesToExport);
     let exportItems: DocInfo[] = $state([]);
     let exportItemState: {[key: string]: string;} = $state({});
 
@@ -15,17 +13,15 @@
     let errorMessage: string = $state("hello");
     let showError: boolean = $state(false);
 
-    $effect(() => {
-        GetElementsByIds(exportIds)
-            .then((result: DocInfo[]) => {
-                exportItems = result;
-            });
-    });
+    GetCheckedFiles()
+        .then((result: DocInfo[]) => {
+            exportItems = result;
+        });
 
     const onProceed = () => {
         showError = false;
         exporting = true;
-        ExportPdfs(exportIds);
+        //ExportPdfs(exportIds);
     };
 
     EventsOn("downloading", (id: string) => {
@@ -66,7 +62,7 @@
         <Listgroup items={exportItems} let:item active={false}>
             <div class="flex flex-row justify-start items-center w-full">
                 <FileLinesSolid class="mr-1" size="lg" />
-                <P size="xl">{item.Name}</P>
+                <P size="xl">{item.Path}</P>
                 {#if exportItemState[item.Id] === "downloading"}
                     <Spinner class="ml-auto" />
                 {:else if exportItemState[item.Id] === "finished"}

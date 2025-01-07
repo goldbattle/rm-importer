@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Button, Checkbox, Listgroup, Navbar, P, ToolbarButton } from "flowbite-svelte";
     import { ArrowUpOutline, FileLinesSolid, FolderSolid } from "flowbite-svelte-icons";
-    import { GetTabletFolder, GetTabletFolderSelection, OnItemSelect } from "../../wailsjs/go/main/App";
+    import { GetTabletFolder, GetTabletFolderSelection, OnItemSelect, GetCheckedFilesCount } from "../../wailsjs/go/main/App";
     import { push } from "svelte-spa-router";
     import { backend } from "../../wailsjs/go/models";
     type DocInfo = backend.DocInfo;
@@ -14,6 +14,8 @@
     let checked: {[key: string]: number} = $state({});
     // defined in go code
     const UNSELECTED = 0, INDETERMINATE = 1, SELECTED = 2;
+
+    let export_disabled = $state(true);
 
     // onIdUpdate
     $effect(() => {
@@ -29,13 +31,18 @@
     });
 
     const checkUpdate = (item: DocInfo, value: boolean | undefined) => {
+        let select;
         if (value) {
             checked[item.Id] = SELECTED;
-            OnItemSelect(item.Id, true);
+            select = true;
         } else {
             checked[item.Id] = UNSELECTED;
-            OnItemSelect(item.Id, false);
+            select = false;
         }
+        OnItemSelect(item.Id, select)
+        .then(() => GetCheckedFilesCount().then((count: number) => {
+                export_disabled = (count === 0);
+            }));
     };
 
     const onBack = () => {
@@ -95,7 +102,7 @@
         {/if}
     </main>
     <div class="fixed bottom-7 right-10">
-        <Button pill size="xl" disabled={true}
+        <Button pill size="xl" disabled={export_disabled}
                 onclick={onExportClick}>Export</Button>
     </div>
 </div>

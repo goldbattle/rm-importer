@@ -6,8 +6,20 @@ export function ExportPdfs(arg1) {
   return window['go']['main']['App']['ExportPdfs'](arg1);
 }
 
+export function GetCheckedFiles() {
+  return window['go']['main']['App']['GetCheckedFiles']();
+}
+
+export function GetCheckedFilesCount() {
+  return window['go']['main']['App']['GetCheckedFilesCount']();
+}
+
 export function GetElementsByIds(arg1) {
   return window['go']['main']['App']['GetElementsByIds'](arg1);
+}
+
+export function GetPaths(arg1) {
+  return window['go']['main']['App']['GetPaths'](arg1);
 }
 
 export function GetTabletFolder(arg1) {

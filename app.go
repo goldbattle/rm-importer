@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"rm-exporter/backend"
+	"slices"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -74,4 +75,32 @@ func (a *App) ExportPdfs(ids []backend.DocId) {
 
 func (a *App) OnItemSelect(id backend.DocId, selection bool) {
 	a.selection.Select(id, selection)
+}
+
+/* Includes path for every checked file */
+func (a *App) GetCheckedFiles() []backend.DocInfo {
+	ids := a.selection.GetCheckedFiles()
+	files := a.rm_reader.GetElementsByIds(ids)
+	paths := a.rm_reader.GetPaths(ids)
+	for i := 0; i < len(files); i += 1 {
+		files[i].Path = &paths[i]
+	}
+	slices.SortFunc(files, func(i, j backend.DocInfo) int {
+		if *i.Path < *j.Path {
+			return -1
+		}
+		if *i.Path == *j.Path {
+			return 0
+		}
+		return 1
+	})
+	return files
+}
+
+func (a *App) GetCheckedFilesCount() int {
+	return a.selection.GetCheckedFilesCount()
+}
+
+func (a *App) GetPaths(ids []backend.DocId) []string {
+	return a.rm_reader.GetPaths(ids)
 }
