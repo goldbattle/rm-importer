@@ -14,9 +14,13 @@ type SelectionInfo struct {
 }
 
 type FileSelection struct {
-	Children     map[DocId][]DocId
+	Children map[DocId][]DocId
+	Parent   map[DocId]DocId
+
 	DocSelection map[DocId]SelectionStatus
-	Parent       map[DocId]DocId
+
+	/* stores documents for which the user selected the checkbox*/
+	CheckedDocs map[DocId]bool
 }
 
 func NewFileSelection(c map[DocId][]DocInfo) FileSelection {
@@ -38,7 +42,7 @@ func NewFileSelection(c map[DocId][]DocInfo) FileSelection {
 		}
 	}
 
-	return FileSelection{m, make(map[string]SelectionStatus), parent}
+	return FileSelection{m, parent, make(map[string]SelectionStatus), make(map[string]bool)}
 }
 
 func (f *FileSelection) setDocSelection(id DocId, selection bool) {
@@ -62,10 +66,9 @@ func (f *FileSelection) dfs(item DocId, selection bool) {
 	}
 }
 
-func (f *FileSelection) updateParents(id DocId, isFolder bool) {
+func (f *FileSelection) updateParents(id DocId) {
 	for {
-		if isFolder {
-			ids := f.Children[id]
+		if ids, ok := f.Children[id]; ok {
 			s, i := 0, 0
 			for _, id := range ids {
 				if f.DocSelection[id] == Selected {
@@ -88,18 +91,17 @@ func (f *FileSelection) updateParents(id DocId, isFolder bool) {
 			break
 		}
 		id = f.Parent[id]
-		isFolder = true
 	}
 }
 
-func (f *FileSelection) Select(item DocInfo, selection bool) {
+func (f *FileSelection) Select(id DocId, selection bool) {
 	/* Set the selection value to all items in the subtree of 'item'. */
-	f.dfs(item.Id, selection)
+	f.dfs(id, selection)
 
 	/* Number of selectedOrIndeterminate children could change,
 	   which could in turn change the state of the parent itself.
 	   This method iteratively updates parents' states up to root. */
-	f.updateParents(item.Id, item.IsFolder)
+	f.updateParents(id)
 }
 
 func (f *FileSelection) GetFolderSelection(id DocId) []SelectionInfo {

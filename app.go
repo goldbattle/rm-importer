@@ -72,6 +72,6 @@ func (a *App) ExportPdfs(ids []backend.DocId) {
 	}
 }
 
-func (a *App) OnItemSelect(item backend.DocInfo, selection bool) {
-	a.selection.Select(item, selection)
+func (a *App) OnItemSelect(id backend.DocId, selection bool) {
+	a.selection.Select(id, selection)
 }

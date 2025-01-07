@@ -31,10 +31,10 @@
     const checkUpdate = (item: DocInfo, value: boolean | undefined) => {
         if (value) {
             checked[item.Id] = SELECTED;
-            OnItemSelect(item, true);
+            OnItemSelect(item.Id, true);
         } else {
             checked[item.Id] = UNSELECTED;
-            OnItemSelect(item, false);
+            OnItemSelect(item.Id, false);
         }
     };
 
