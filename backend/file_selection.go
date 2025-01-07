@@ -8,10 +8,15 @@ const (
 	Selected      SelectionStatus = iota
 )
 
+type SelectionInfo struct {
+	Id     DocId
+	Status SelectionStatus
+}
+
 type FileSelection struct {
-	children     map[DocId][]DocId
-	docSelection map[DocId]SelectionStatus
-	parent       map[DocId]DocId
+	Children     map[DocId][]DocId
+	DocSelection map[DocId]SelectionStatus
+	Parent       map[DocId]DocId
 }
 
 func NewFileSelection(c map[DocId][]DocInfo) FileSelection {
@@ -44,13 +49,13 @@ func (f *FileSelection) setDocSelection(id DocId, selection bool) {
 		status = Selected
 	}
 
-	f.docSelection[id] = status
+	f.DocSelection[id] = status
 }
 
 func (f *FileSelection) dfs(item DocId, selection bool) {
 	f.setDocSelection(item, selection)
 
-	if ids, ok := f.children[item]; ok {
+	if ids, ok := f.Children[item]; ok {
 		for _, child := range ids {
 			f.dfs(child, selection)
 		}
@@ -60,29 +65,29 @@ func (f *FileSelection) dfs(item DocId, selection bool) {
 func (f *FileSelection) updateParents(id DocId, isFolder bool) {
 	for {
 		if isFolder {
-			ids := f.children[id]
+			ids := f.Children[id]
 			s, i := 0, 0
 			for _, id := range ids {
-				if f.docSelection[id] == Selected {
+				if f.DocSelection[id] == Selected {
 					s += 1
 				}
-				if f.docSelection[id] == Indeterminate {
+				if f.DocSelection[id] == Indeterminate {
 					i += 1
 				}
 			}
 			if s == 0 && i == 0 {
-				f.docSelection[id] = NotSelected
+				f.DocSelection[id] = NotSelected
 			} else if s == len(ids) {
-				f.docSelection[id] = Selected
+				f.DocSelection[id] = Selected
 			} else {
-				f.docSelection[id] = Indeterminate
+				f.DocSelection[id] = Indeterminate
 			}
 		}
 
 		if id == "" {
 			break
 		}
-		id = f.parent[id]
+		id = f.Parent[id]
 		isFolder = true
 	}
 }
@@ -97,6 +102,10 @@ func (f *FileSelection) Select(item DocInfo, selection bool) {
 	f.updateParents(item.Id, item.IsFolder)
 }
 
-func (f *FileSelection) GetSelection(item DocInfo) {
-	f.
+func (f *FileSelection) GetFolderSelection(id DocId) []SelectionInfo {
+	result := []SelectionInfo{}
+	for _, id := range f.Children[id] {
+		result = append(result, SelectionInfo{id, f.DocSelection[id]})
+	}
+	return result
 }

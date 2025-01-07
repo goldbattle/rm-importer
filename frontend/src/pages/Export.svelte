@@ -1,12 +1,13 @@
 <script lang="ts">
     import { Alert, Button, Heading, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
-    import { filesToExport } from "../logic/checkboxes.svelte";
     import { get } from "svelte/store";
     import { GetElementsByIds, ExportPdfs } from '../../wailsjs/go/main/App.js';
     import { CheckOutline, ExclamationCircleOutline, FileLinesSolid, InfoCircleSolid } from "flowbite-svelte-icons";
     import { EventsOn } from "../../wailsjs/runtime";
+    import { backend } from "../../wailsjs/go/models";
+    type DocInfo = backend.DocInfo;
 
-    let exportIds: string[] = get(filesToExport);
+    let exportIds: string[] = $state([]); //get(filesToExport);
     let exportItems: DocInfo[] = $state([]);
     let exportItemState: {[key: string]: string;} = $state({});
 

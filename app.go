@@ -42,8 +42,8 @@ func (a *App) GetTabletFolder(id backend.DocId) []backend.DocInfo {
 	return a.rm_reader.GetFolder(id)
 }
 
-func (a *App) GetTabletFolderSelection(id backend.DocId) []backend.DocInfo {
-
+func (a *App) GetTabletFolderSelection(id backend.DocId) []backend.SelectionInfo {
+	return a.selection.GetFolderSelection(id)
 }
 
 func (a *App) IsIpValid(s string) bool {

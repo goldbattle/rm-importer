@@ -43,6 +43,20 @@ export namespace backend {
 		    return a;
 		}
 	}
+	export class SelectionInfo {
+	    Id: string;
+	    Status: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SelectionInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Id = source["Id"];
+	        this.Status = source["Status"];
+	    }
+	}
 
 }
 

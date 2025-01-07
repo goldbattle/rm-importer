@@ -8,6 +8,10 @@ export function GetElementsByIds(arg1:Array<string>):Promise<Array<backend.DocIn
 
 export function GetTabletFolder(arg1:string):Promise<Array<backend.DocInfo>>;
 
+export function GetTabletFolderSelection(arg1:string):Promise<Array<backend.SelectionInfo>>;
+
 export function IsIpValid(arg1:string):Promise<boolean>;
+
+export function OnItemSelect(arg1:backend.DocInfo,arg2:boolean):Promise<void>;
 
 export function ReadTabletDocs(arg1:string):Promise<void>;

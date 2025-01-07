@@ -14,8 +14,16 @@ export function GetTabletFolder(arg1) {
   return window['go']['main']['App']['GetTabletFolder'](arg1);
 }
 
+export function GetTabletFolderSelection(arg1) {
+  return window['go']['main']['App']['GetTabletFolderSelection'](arg1);
+}
+
 export function IsIpValid(arg1) {
   return window['go']['main']['App']['IsIpValid'](arg1);
+}
+
+export function OnItemSelect(arg1, arg2) {
+  return window['go']['main']['App']['OnItemSelect'](arg1, arg2);
 }
 
 export function ReadTabletDocs(arg1) {

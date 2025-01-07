@@ -1,25 +1,41 @@
 <script lang="ts">
     import { Button, Checkbox, Listgroup, Navbar, P, ToolbarButton } from "flowbite-svelte";
     import { ArrowUpOutline, FileLinesSolid, FolderSolid } from "flowbite-svelte-icons";
-    import { GetTabletFolder } from "../../wailsjs/go/main/App";
-    import { isChecked, setChecked, isExportButtonDisabled, storeCheckedFiles } from "../logic/checkboxes.svelte";
+    import { GetTabletFolder, GetTabletFolderSelection, OnItemSelect } from "../../wailsjs/go/main/App";
     import { push } from "svelte-spa-router";
+    import { backend } from "../../wailsjs/go/models";
+    type DocInfo = backend.DocInfo;
     
     let id = $state("");
     let path: string[] = $state([]);
     let items: DocInfo[] = $state([]);
-    let checked: {[key: string]: boolean} = $state({});
+
+    // Checked stores checkbox value for every element of the folder
+    let checked: {[key: string]: number} = $state({});
+    // defined in go code
+    const UNSELECTED = 0, INDETERMINATE = 1, SELECTED = 2;
 
     // onIdUpdate
     $effect(() => {
         GetTabletFolder(id).then((result) => {
             items = result;
         });
+        GetTabletFolderSelection(id).then((result) => {
+            checked = {}
+            for (const item of result) {
+                checked[item.Id] = item.Status
+            }
+        });
     });
 
-    const checkUpdate = (item: DocInfo, value: boolean) => {
-        checked[id] = value;
-        OnItemSelect(item, value);
+    const checkUpdate = (item: DocInfo, value: boolean | undefined) => {
+        if (value) {
+            checked[item.Id] = SELECTED;
+            OnItemSelect(item, true);
+        } else {
+            checked[item.Id] = UNSELECTED;
+            OnItemSelect(item, false);
+        }
     };
 
     const onBack = () => {
@@ -39,7 +55,7 @@
     };
 
     const onExportClick = () => {
-        storeCheckedFiles();
+        //storeCheckedFiles();
         push('/export');
     };
 </script>
@@ -58,9 +74,12 @@
         {#if items.length > 0}
         <Listgroup {items} let:item active={false}>
             <div class="flex flex-row justify-start items-center">
-
-                <Checkbox bind:checked={() => checked[item.Id], (v) => checkUpdate(item, v)}
+                
+                {#key [id, checked[""]]}
+                <Checkbox bind:checked={() => checked[item.Id] === SELECTED, (v) => checkUpdate(item, v)}
+                          indeterminate={checked[item.Id] === INDETERMINATE}
                           class="mr-2" />
+                {/key}
 
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
                      onclick={() => onItemClick(item)}>
@@ -76,7 +95,7 @@
         {/if}
     </main>
     <div class="fixed bottom-7 right-10">
-        <Button pill size="xl" disabled={isExportButtonDisabled()}
+        <Button pill size="xl" disabled={true}
                 onclick={onExportClick}>Export</Button>
     </div>
 </div>
