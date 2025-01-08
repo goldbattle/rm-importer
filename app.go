@@ -14,6 +14,7 @@ type App struct {
 	rm_reader   backend.RmReader
 	tablet_addr string
 	selection   backend.FileSelection
+	rm_export   backend.RmExport
 }
 
 // NewApp creates a new App application struct
@@ -51,25 +52,26 @@ func (a *App) IsIpValid(s string) bool {
 	return backend.IsIpValid(s)
 }
 
-func (a *App) GetElementsByIds(ids []backend.DocId) []backend.DocInfo {
-	return a.rm_reader.GetElementsByIds(ids)
+func (a *App) SetExportOptions(export backend.RmExport) {
+	runtime.LogDebugf(a.ctx, "%v", export)
+	a.rm_export = export
 }
 
-func (a *App) ExportPdfs(ids []backend.DocId) {
-	// possible states of export: downloading, finished, error
-	for _, id := range ids {
-		runtime.EventsEmit(a.ctx, "downloading", id)
+func (a *App) Export() {
+	files := a.GetCheckedFiles()
 
-		res, err := backend.ExportPdf(a.tablet_addr, a.rm_reader.GetElementById(id))
+	// possible states of export: downloading, finished, error
+	for _, item := range files {
+		runtime.EventsEmit(a.ctx, "downloading", item.Id)
+
+		res, err := a.rm_export.Export(a.tablet_addr, item)
 
 		if err == nil {
-			runtime.EventsEmit(a.ctx, "finished", id)
+			runtime.EventsEmit(a.ctx, "finished", item.Id)
 		} else {
-			runtime.EventsEmit(a.ctx, "error", id, err.Error())
+			runtime.EventsEmit(a.ctx, "error", item.Id, err.Error())
 			break
 		}
-
-		runtime.LogDebug(a.ctx, res)
 	}
 }
 
@@ -103,4 +105,12 @@ func (a *App) GetCheckedFilesCount() int {
 
 func (a *App) GetPaths(ids []backend.DocId) []string {
 	return a.rm_reader.GetPaths(ids)
+}
+
+func (a *App) DirectoryDialog() string {
+	dir, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{})
+	if err != nil {
+		return ""
+	}
+	return dir
 }

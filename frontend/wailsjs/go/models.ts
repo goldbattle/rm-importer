@@ -45,6 +45,20 @@ export namespace backend {
 		    return a;
 		}
 	}
+	export class RmExport {
+	    Format: string;
+	    Location: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RmExport(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Format = source["Format"];
+	        this.Location = source["Location"];
+	    }
+	}
 	export class SelectionInfo {
 	    Id: string;
 	    Status: number;

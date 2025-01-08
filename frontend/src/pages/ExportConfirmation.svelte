@@ -1,0 +1,71 @@
+<script lang="ts">
+    import { Button, ButtonGroup, Listgroup, Navbar, P } from "flowbite-svelte";
+    import { GetCheckedFiles, DirectoryDialog, SetExportOptions, Export } from '../../wailsjs/go/main/App.js';
+    import { CheckOutline, FileLinesSolid } from "flowbite-svelte-icons";
+    import { backend } from "../../wailsjs/go/models.js";
+    import { push } from "svelte-spa-router";
+    type DocInfo = backend.DocInfo;
+
+    let format = $state('pdf');
+    let location = $state("");
+    let items: DocInfo[] = $state([]);
+
+    GetCheckedFiles()
+        .then((result: DocInfo[]) => {
+            items = result;
+        });
+
+    const selectDirectory = () => {
+        DirectoryDialog().then((result: string) => {
+            location = result;
+        });
+    };
+
+    const onProceed = () => {
+        SetExportOptions({location, format}).then(() => {
+            Export();
+            push('/export');
+        });
+    };
+</script>
+
+<div style="height: fit-content;">
+    <Navbar color="blue" class="sticky top-0">
+        <h1 class="font-bold m-auto">Export options</h1>
+    </Navbar>
+
+    <main class="pr-7 pl-7 mt-3 w-full">
+        <div class="flex flex-row justify-items-start items-center">
+            <h2 class="w-20 text-md">Format:</h2>
+            <ButtonGroup class="space-x-px">
+                <Button pill color="green" onclick={() => format = 'pdf'}>
+                    {#if format==='pdf'}
+                        <CheckOutline />
+                    {/if}.pdf
+                </Button>
+                <Button pill color="purple" onclick={() => format = 'rmdoc'}>
+                    {#if format==='rmdoc'}
+                        <CheckOutline />
+                    {/if}.rmdoc
+                </Button>
+            </ButtonGroup>
+        </div>
+        <div class="flex flex-row justify-items-start items-center mt-3">
+            <h2 class="w-20 text-md">Location:</h2>
+            <Button pill onclick={selectDirectory}>Choose directory</Button>
+            <h2 class="text-md ml-2">{location || "No folder selected."}</h2>
+        </div>
+        {#if items.length > 0}
+            <h1 class="mb-2 mt-4 text-lg font-bold"> Following items will be exported: </h1>
+            <Listgroup items={items} let:item active={false}>
+                <div class="flex flex-row justify-start items-center w-full">
+                    <FileLinesSolid class="mr-1" size="lg" />
+                    <P size="xl">{item.Path}</P>
+                </div>
+            </Listgroup>
+        {/if}
+    </main>
+    <div class="fixed bottom-7 right-10">
+        <Button disabled={!location} pill size="xl" onclick={onProceed}>Proceed</Button>
+    </div>
+</div>

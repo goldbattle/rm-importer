@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { Alert, Button, Heading, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
-    import { GetElementsByIds, ExportPdfs, GetCheckedFiles } from '../../wailsjs/go/main/App.js';
+    import { Alert, Button, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
+    import { GetCheckedFiles } from '../../wailsjs/go/main/App.js';
     import { CheckOutline, ExclamationCircleOutline, FileLinesSolid, InfoCircleSolid } from "flowbite-svelte-icons";
-    import { EventsOn } from "../../wailsjs/runtime";
-    import { backend } from "../../wailsjs/go/models";
+    import { EventsOn } from "../../wailsjs/runtime/runtime.js";
+    import { backend } from "../../wailsjs/go/models.js";
     type DocInfo = backend.DocInfo;
 
     let exportItems: DocInfo[] = $state([]);
@@ -17,12 +17,6 @@
         .then((result: DocInfo[]) => {
             exportItems = result;
         });
-
-    const onProceed = () => {
-        showError = false;
-        exporting = true;
-        //ExportPdfs(exportIds);
-    };
 
     EventsOn("downloading", (id: string) => {
         exportItemState[id] = "downloading";
@@ -58,6 +52,7 @@
         <h1 class="font-bold m-auto">Export</h1>
     </Navbar>
 
+    <main class="pr-7 pl-7 mt-3 w-full">
     {#if exportItems.length > 0}
         <Listgroup items={exportItems} let:item active={false}>
             <div class="flex flex-row justify-start items-center w-full">
@@ -73,7 +68,5 @@
             </div>
         </Listgroup>
     {/if}
-    <div class="fixed bottom-7 right-10">
-        <Button disabled={exporting} pill size="xl" onclick={onProceed}>Proceed</Button>
-    </div>
+    </main>
 </div>
