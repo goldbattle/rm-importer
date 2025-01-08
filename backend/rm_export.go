@@ -14,11 +14,15 @@ import (
 )
 
 type RmExport struct {
-	Format   string // 'pdf' or 'rmdoc'
-	Location string // path to the folder to export
+	Format             string // 'pdf' or 'rmdoc'
+	Location           string // path to the folder to export
+	WrappingFolderName string
 }
 
-func (r *RmExport) ExportMultiple(ctx context.Context, tablet_addr string, items []DocInfo) {
+/* Returns 0 if all items were succesfully exported, otherwise returns the index of an item that errored first. */
+/* 'export_from' is the index in items list of the first item to be exported.
+   All items with index less than export_from are ignored. */
+func (r *RmExport) ExportMultiple(ctx context.Context, tablet_addr string, items []DocInfo, export_from int) int {
 	client := http.Client{
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
@@ -29,16 +33,17 @@ func (r *RmExport) ExportMultiple(ctx context.Context, tablet_addr string, items
 	}
 
 	runtime.LogInfof(ctx, "Export format: %v", r.Format)
-
-	folderName := "rM Export (" + time.Now().Format(time.DateTime) + ")"
-	runtime.LogInfof(ctx, "In export location, creating a folder with a name: %v", folderName)
+	runtime.LogInfof(ctx, "In export location, using a wrapper folder with a name: %v", r.WrappingFolderName)
 
 	// possible states of export: downloading, finished, error
-	for _, item := range items {
+	for i, item := range items {
+		if i < export_from {
+			continue
+		}
 		runtime.EventsEmit(ctx, "downloading", item.Id)
 		runtime.LogInfof(ctx, "Downloading file with id=%v", item.Id)
 
-		err := r.export(&client, tablet_addr, folderName, item)
+		err := r.export(&client, tablet_addr, item)
 
 		if err == nil {
 			runtime.LogInfof(ctx, "Finished downloading file with id=%v", item.Id)
@@ -46,17 +51,19 @@ func (r *RmExport) ExportMultiple(ctx context.Context, tablet_addr string, items
 		} else {
 			runtime.LogInfof(ctx, "Error while downloading file with id=%v, error=%v", item.Id, err.Error())
 			runtime.EventsEmit(ctx, "error", item.Id, err.Error())
-			break
+			return i
 		}
 	}
+
+	return 0
 }
 
-func (r *RmExport) export(client *http.Client, tablet_addr string, folderName string, item DocInfo) error {
+func (r *RmExport) export(client *http.Client, tablet_addr string, item DocInfo) error {
 	if item.IsFolder {
 		return nil
 	}
 
-	out, err := r.createFile(folderName, item)
+	out, err := r.createFile(r.WrappingFolderName, item)
 	if err != nil {
 		return err
 	}

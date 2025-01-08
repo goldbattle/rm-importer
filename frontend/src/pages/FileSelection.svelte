@@ -16,6 +16,9 @@
     const UNSELECTED = 0, INDETERMINATE = 1, SELECTED = 2;
 
     let export_disabled = $state(true);
+    GetCheckedFilesCount().then((count: number) => {
+        export_disabled = (count === 0);
+    });
 
     // onIdUpdate
     $effect(() => {

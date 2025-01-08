@@ -4,6 +4,7 @@ import (
 	"context"
 	"rm-exporter/backend"
 	"slices"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -14,7 +15,9 @@ type App struct {
 	rm_reader   backend.RmReader
 	tablet_addr string
 	selection   backend.FileSelection
+
 	rm_export   backend.RmExport
+	export_from int
 }
 
 // NewApp creates a new App application struct
@@ -26,6 +29,7 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.export_from = -1
 }
 
 func (a *App) ReadTabletDocs(tablet_addr string) error {
@@ -58,7 +62,10 @@ func (a *App) SetExportOptions(export backend.RmExport) {
 
 func (a *App) Export() {
 	files := a.GetCheckedFiles()
-	a.rm_export.ExportMultiple(a.ctx, a.tablet_addr, files)
+	if a.export_from == -1 {
+		a.rm_export.WrappingFolderName = "rM Export (" + time.Now().Format(time.DateTime) + ")"
+	}
+	a.export_from = a.rm_export.ExportMultiple(a.ctx, a.tablet_addr, files, a.export_from)
 }
 
 func (a *App) OnItemSelect(id backend.DocId, selection bool) {

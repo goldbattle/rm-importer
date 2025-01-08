@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { Button, ButtonGroup, Listgroup, Navbar, P } from "flowbite-svelte";
-    import { GetCheckedFiles, DirectoryDialog, SetExportOptions, Export } from '../../wailsjs/go/main/App.js';
-    import { CheckOutline, FileLinesSolid } from "flowbite-svelte-icons";
+    import { Button, ButtonGroup, Listgroup, Navbar, P, ToolbarButton } from "flowbite-svelte";
+    import { GetCheckedFiles, DirectoryDialog, SetExportOptions } from '../../wailsjs/go/main/App.js';
+    import { ArrowLeftOutline, CheckOutline, FileLinesSolid } from "flowbite-svelte-icons";
     import { backend } from "../../wailsjs/go/models.js";
     import { push } from "svelte-spa-router";
     type DocInfo = backend.DocInfo;
@@ -23,15 +23,24 @@
 
     const onProceed = () => {
         SetExportOptions({location, format}).then(() => {
-            Export();
             push('/export');
         });
+    };
+
+    const onBack = () => {
+        push('/files')
     };
 </script>
 
 <div style="height: fit-content;">
     <Navbar color="blue" class="sticky top-0">
+        <div>
+            <ToolbarButton color="blue" name="Back" onclick={onBack}> <ArrowLeftOutline class="w-7 h-7" /></ToolbarButton>
+        </div>
         <h1 class="font-bold m-auto">Export options</h1>
+        <div class="invisible">
+            <ToolbarButton color="blue" name="Back" onclick={onBack}> <ArrowLeftOutline class="w-7 h-7" /></ToolbarButton>
+        </div>
     </Navbar>
 
     <main class="pr-7 pl-7 mt-3 w-full">

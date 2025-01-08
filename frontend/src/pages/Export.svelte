@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Alert, Button, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
-    import { GetCheckedFiles } from '../../wailsjs/go/main/App.js';
+    import { Export, GetCheckedFiles} from '../../wailsjs/go/main/App.js';
     import { CheckOutline, ExclamationCircleOutline, FileLinesSolid, InfoCircleSolid } from "flowbite-svelte-icons";
     import { EventsOn } from "../../wailsjs/runtime/runtime.js";
     import { backend } from "../../wailsjs/go/models.js";
@@ -9,14 +9,27 @@
     let exportItems: DocInfo[] = $state([]);
     let exportItemState: {[key: string]: string;} = $state({});
 
-    let exporting: boolean = $state(false);
     let errorMessage: string = $state("hello");
     let showError: boolean = $state(false);
+    let errorHappened: boolean = $state(false);
 
     GetCheckedFiles()
         .then((result: DocInfo[]) => {
             exportItems = result;
         });
+    
+    Export();
+
+    const onRetry = () => {
+        errorHappened = false;
+        Export();
+    };
+
+    const finishedAllItems = $derived(() => {
+        return Object.keys(exportItemState)
+            .filter((id: string) => exportItemState[id] == "finished")
+            .length == exportItems.length
+    });
 
     EventsOn("downloading", (id: string) => {
         exportItemState[id] = "downloading";
@@ -30,7 +43,7 @@
         exportItemState[id] = "error";
         showError = true;
         errorMessage = msg;
-        exporting = false;
+        errorHappened = true;
     });
 </script>
 
@@ -49,7 +62,7 @@
     {/key}
 
     <Navbar color="blue" class="sticky top-0">
-        <h1 class="font-bold m-auto">Export</h1>
+        <h1 class="font-bold m-auto">{finishedAllItems() ? "Success!" : "Export"}</h1>
     </Navbar>
 
     <main class="pr-7 pl-7 mt-3 w-full">
@@ -69,4 +82,8 @@
         </Listgroup>
     {/if}
     </main>
+
+    <div class="fixed bottom-7 right-10">
+        <Button class={!errorHappened ? "invisible": ""} pill size="xl" onclick={onRetry}>Retry</Button>
+    </div>
 </div>

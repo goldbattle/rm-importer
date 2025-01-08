@@ -48,6 +48,7 @@ export namespace backend {
 	export class RmExport {
 	    Format: string;
 	    Location: string;
+	    WrappingFolderName: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new RmExport(source);
@@ -57,6 +58,7 @@ export namespace backend {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Format = source["Format"];
 	        this.Location = source["Location"];
+	        this.WrappingFolderName = source["WrappingFolderName"];
 	    }
 	}
 	export class SelectionInfo {
