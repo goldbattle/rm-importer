@@ -53,26 +53,12 @@ func (a *App) IsIpValid(s string) bool {
 }
 
 func (a *App) SetExportOptions(export backend.RmExport) {
-	runtime.LogDebugf(a.ctx, "%v", export)
 	a.rm_export = export
 }
 
 func (a *App) Export() {
 	files := a.GetCheckedFiles()
-
-	// possible states of export: downloading, finished, error
-	for _, item := range files {
-		runtime.EventsEmit(a.ctx, "downloading", item.Id)
-
-		res, err := a.rm_export.Export(a.tablet_addr, item)
-
-		if err == nil {
-			runtime.EventsEmit(a.ctx, "finished", item.Id)
-		} else {
-			runtime.EventsEmit(a.ctx, "error", item.Id, err.Error())
-			break
-		}
-	}
+	a.rm_export.ExportMultiple(a.ctx, a.tablet_addr, files)
 }
 
 func (a *App) OnItemSelect(id backend.DocId, selection bool) {

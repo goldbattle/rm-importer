@@ -71,6 +71,9 @@ func readDocs(tablet_addr string) ([]DocInfo, error) {
 
 	directories := []string{""}
 	result := []DocInfo{}
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
 
 	for len(directories) > 0 {
 		id := directories[0]
@@ -79,9 +82,6 @@ func readDocs(tablet_addr string) ([]DocInfo, error) {
 		url := "http://" + tablet_addr + "/documents/" + id
 		content_type := "application/json"
 
-		client := http.Client{
-			Timeout: 5 * time.Second,
-		}
 		resp, err := client.Post(url, content_type, &bytes.Buffer{})
 		if err != nil {
 			return nil, err
