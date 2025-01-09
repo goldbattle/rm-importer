@@ -6,9 +6,13 @@ export function DirectoryDialog():Promise<string>;
 
 export function Export():Promise<void>;
 
+export function GetAppVersion():Promise<string>;
+
 export function GetCheckedFiles():Promise<Array<backend.DocInfo>>;
 
 export function GetCheckedFilesCount():Promise<number>;
+
+export function GetExportOptions():Promise<backend.RmExport>;
 
 export function GetPaths(arg1:Array<string>):Promise<Array<string>>;
 

@@ -10,12 +10,20 @@ export function Export() {
   return window['go']['main']['App']['Export']();
 }
 
+export function GetAppVersion() {
+  return window['go']['main']['App']['GetAppVersion']();
+}
+
 export function GetCheckedFiles() {
   return window['go']['main']['App']['GetCheckedFiles']();
 }
 
 export function GetCheckedFilesCount() {
   return window['go']['main']['App']['GetCheckedFilesCount']();
+}
+
+export function GetExportOptions() {
+  return window['go']['main']['App']['GetExportOptions']();
 }
 
 export function GetPaths(arg1) {

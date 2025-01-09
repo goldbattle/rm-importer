@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	_ "embed"
+	"encoding/json"
 	"rm-exporter/backend"
 	"slices"
 	"time"
@@ -20,6 +22,9 @@ type App struct {
 	export_from int
 }
 
+//go:embed wails.json
+var wailsJSON string
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
@@ -30,6 +35,15 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.export_from = -1
+}
+
+func (a *App) GetAppVersion() string {
+	m := make(map[string]interface{})
+	err := json.Unmarshal([]byte(wailsJSON), &m)
+	if err != nil {
+		return "0.0.0"
+	}
+	return m["info"].(map[string]interface{})["productVersion"].(string)
 }
 
 func (a *App) ReadTabletDocs(tablet_addr string) error {
@@ -58,6 +72,10 @@ func (a *App) IsIpValid(s string) bool {
 
 func (a *App) SetExportOptions(export backend.RmExport) {
 	a.rm_export = export
+}
+
+func (a *App) GetExportOptions() backend.RmExport {
+	return a.rm_export
 }
 
 func (a *App) Export() {

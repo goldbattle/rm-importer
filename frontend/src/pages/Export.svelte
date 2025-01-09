@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Alert, Button, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
-    import { Export, GetCheckedFiles} from '../../wailsjs/go/main/App.js';
+    import { Export, GetCheckedFiles, GetExportOptions } from '../../wailsjs/go/main/App.js';
     import { CheckOutline, ExclamationCircleOutline, FileLinesSolid, InfoCircleSolid } from "flowbite-svelte-icons";
     import { EventsOn } from "../../wailsjs/runtime/runtime.js";
     import { backend } from "../../wailsjs/go/models.js";
@@ -8,6 +8,7 @@
 
     let exportItems: DocInfo[] = $state([]);
     let exportItemState: {[key: string]: string;} = $state({});
+    let exportOptions: backend.RmExport = $state({});
 
     let errorMessage: string = $state("hello");
     let showError: boolean = $state(false);
@@ -18,6 +19,11 @@
             exportItems = result;
         });
     
+    GetExportOptions()
+        .then((result: backend.RmExport) => {
+            exportOptions = result;
+        });
+
     Export();
 
     const onRetry = () => {
@@ -64,9 +70,13 @@
     <Navbar color="blue" class="sticky top-0">
         <h1 class="font-bold m-auto">{finishedAllItems() ? "Success!" : "Export"}</h1>
     </Navbar>
-
+    
     <main class="pr-7 pl-7 mt-3 w-full">
-    {#if exportItems.length > 0}
+    
+        <h2 class="text-md">Format: {exportOptions["Format"]}</h2>
+        <h2 class="text-md mb-3">Location: {exportOptions["Location"]}</h2>
+    
+        {#if exportItems.length > 0}
         <Listgroup items={exportItems} let:item active={false}>
             <div class="flex flex-row justify-start items-center w-full">
                 <FileLinesSolid class="mr-1" size="lg" />

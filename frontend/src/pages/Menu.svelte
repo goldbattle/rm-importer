@@ -1,9 +1,17 @@
 <script lang="ts">
-  import { Alert, Button, P, Input, Label, Spinner} from 'flowbite-svelte';
+  import { Alert, Button, P, Input, Label, Spinner, Footer, A} from 'flowbite-svelte';
   import { ArrowRightOutline, InfoCircleSolid, TabletSolid, CloseOutline } from 'flowbite-svelte-icons';
-  import { ReadTabletDocs, IsIpValid} from '../../wailsjs/go/main/App.js';
+  import { ReadTabletDocs, IsIpValid, GetAppVersion } from '../../wailsjs/go/main/App.js';
   import { push } from 'svelte-spa-router';
+  import { BrowserOpenURL } from '../../wailsjs/runtime/runtime.js';
 
+  const source = "https://github.com/chopikus/rm-exporter";
+  let version = $state("");
+
+  GetAppVersion().then((v: string) => {
+    version = v;
+  });
+  
   let rmIp: string = $state("10.11.99.1");
   let isRmIpValid: boolean = $state(true);
   let loading: boolean = $state(false);
@@ -33,6 +41,10 @@
         loading = false;
       });
   }
+
+  const onSourceClick = () => {
+    BrowserOpenURL(source)
+  };
 
 </script>
 
@@ -68,3 +80,6 @@
     </Button>
   </div>
 </main>
+<Footer class="absolute bottom-0">
+  <P size="sm">Version {version}. Source available at <A onclick={onSourceClick}>{source}</A></P>
+</Footer>

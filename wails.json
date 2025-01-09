@@ -8,5 +8,8 @@
   "frontend:dev:serverUrl": "auto",
   "author": {
     "name": "Igor Chovpan"
+  },
+  "info": {
+    "productVersion": "0.1.0"
   }
 }
