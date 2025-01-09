@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"rm-exporter/backend"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -81,7 +82,8 @@ func (a *App) GetExportOptions() backend.RmExport {
 func (a *App) Export() {
 	files := a.GetCheckedFiles()
 	if a.export_from == -1 {
-		a.rm_export.WrappingFolderName = "rM Export (" + time.Now().Format(time.DateTime) + ")"
+		t := strings.ReplaceAll(time.Now().Format(time.DateTime), ":", "-")
+		a.rm_export.WrappingFolderName = "rM Export (" + t + ")"
 	}
 	a.export_from = a.rm_export.ExportMultiple(a.ctx, a.tablet_addr, files, a.export_from)
 }
