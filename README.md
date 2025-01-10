@@ -11,12 +11,13 @@ Unfortunately, the default local export has a few flaws:
 This tool aims to fix those problems.
 
 ## Features
-* supports exporting as many folders & notes as you want;
-* can download both .pdf and .rmdoc;
-* Retrying the download **from the last failed note**;
+* Supports exporting as many folders & notes as you want;
+* Can download both .pdf and .rmdoc;
+* Retries the download **from the last failed note**;
 * Waits for large notes long enough;
 * Doesn't require reMarkable account or internet connection;
-* has a nice GUI.
+* Works with out of the box reMarkable software;
+* Has a nice GUI.
 
 ## Usage
 Releases for Windows/MacOS/Linux are available on the 'Releases' tab of the repository.
@@ -30,7 +31,7 @@ Tested on Version 3.16.2.3 on reMarkable 2.
 
 ### Steps before running the `rm-exporter`
 * Enable USB connection in the Storage settings. Without the permission the app can't find the tablet;
-* For long exports with large number of files, turn off Sleep Mode in the Battery settings. For some reason the local
+* For long exports with large number of files, turn off Sleep Mode in the Battery settings. For some reason the local export doesn't prevent the tablet from going to sleep.
 
 ### Building steps
 1. Install [wails v2](https://wails.io/docs/gettingstarted/installation).
