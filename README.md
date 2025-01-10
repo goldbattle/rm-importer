@@ -1,7 +1,8 @@
 # rm-exporter
 
 As you might know, reMarkable supports exporting notes locally through the USB connection.
-Unfortunately, it has a few flaws:
+
+Unfortunately, the default local export has a few flaws:
   * Large notes (10MB+) often can't be exported, **the UI doesn't wait for long enough for a note to download**;
   * Downloading a folder is not possible; only notes one-by-one.
 
