@@ -23,6 +23,15 @@ Releases for Windows/MacOS/Linux are available on the 'Releases' tab of the repo
 
 The tool is built with [wailsv2](https://github.com/wailsapp/wails). The UI is implemented in Typescript/Svelte, file downloading itself is done in Golang.
 
+### Supported rM software version
+Around 3.10+, around that version the local server requests got updated.
+
+Tested on Version 3.16.2.3 on reMarkable 2.
+
+### Steps before running the `rm-exporter`
+* Enable USB connection in the Storage settings. Without the permission the app can't find the tablet;
+* For long exports with large number of files, turn off Sleep Mode in the Battery settings. For some reason the local
+
 ### Building steps
 1. Install [wails v2](https://wails.io/docs/gettingstarted/installation).
 2. Clone the project
