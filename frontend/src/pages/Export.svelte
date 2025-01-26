@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Alert, Button, Listgroup, Navbar, P, Spinner } from "flowbite-svelte";
-    import { Export, GetCheckedFiles, GetExportOptions } from '../../wailsjs/go/main/App.js';
+    import { InitExport, Export, GetCheckedFiles, GetExportOptions } from '../../wailsjs/go/main/App.js';
     import { CheckOutline, ExclamationCircleOutline, FileLinesSolid, InfoCircleSolid } from "flowbite-svelte-icons";
     import { EventsOn } from "../../wailsjs/runtime/runtime.js";
     import { backend } from "../../wailsjs/go/models.js";
@@ -8,11 +8,11 @@
 
     let exportItems: DocInfo[] = $state([]);
     let exportItemState: {[key: string]: string;} = $state({});
-    let exportOptions: backend.RmExport = $state({});
+    let exportOptions: backend.RmExportOptions = $state({});
 
     let errorMessage: string = $state("hello");
     let showError: boolean = $state(false);
-    let errorHappened: boolean = $state(false);
+    let failed: boolean = $state(false);
 
     GetCheckedFiles()
         .then((result: DocInfo[]) => {
@@ -23,11 +23,14 @@
         .then((result: backend.RmExport) => {
             exportOptions = result;
         });
-
-    Export();
+    
+    InitExport()
+        .then(() => {
+            Export();   
+        });
 
     const onRetry = () => {
-        errorHappened = false;
+        failed = false;
         Export();
     };
 
@@ -37,19 +40,19 @@
             .length == exportItems.length
     });
 
-    EventsOn("downloading", (id: string) => {
-        exportItemState[id] = "downloading";
+    EventsOn("started", (id: string) => {
+        exportItemState[id] = "started";
     });
 
     EventsOn("finished", (id: string) => {
         exportItemState[id] = "finished";
     });
 
-    EventsOn("error", (id: string, msg: string) => {
-        exportItemState[id] = "error";
+    EventsOn("failed", (id: string, msg: string) => {
+        exportItemState[id] = "failed";
         showError = true;
         errorMessage = msg;
-        errorHappened = true;
+        failed = true;
     });
 </script>
 
@@ -81,11 +84,11 @@
             <div class="flex flex-row justify-start items-center w-full">
                 <FileLinesSolid class="mr-1" size="lg" />
                 <P size="xl">{item.Path}</P>
-                {#if exportItemState[item.Id] === "downloading"}
+                {#if exportItemState[item.Id] === "started"}
                     <Spinner class="ml-auto" />
                 {:else if exportItemState[item.Id] === "finished"}
                     <CheckOutline class="ml-auto" color="green"/>
-                {:else if exportItemState[item.Id] === "error"}
+                {:else if exportItemState[item.Id] === "failed"}
                     <ExclamationCircleOutline class="ml-auto" color="red"/>
                 {/if}
             </div>
@@ -94,6 +97,6 @@
     </main>
 
     <div class="fixed bottom-7 right-10">
-        <Button class={!errorHappened ? "invisible": ""} pill size="xl" onclick={onRetry}>Retry</Button>
+        <Button class={!failed ? "invisible": ""} pill size="xl" onclick={onRetry}>Retry</Button>
     </div>
 </div>

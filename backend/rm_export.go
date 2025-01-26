@@ -9,21 +9,31 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-type RmExport struct {
-	Format             string // 'pdf' or 'rmdoc'
-	Location           string // path to the folder to export
-	WrappingFolderName string
+type RmExportOptions struct {
+	Format   string // 'pdf' or 'rmdoc'
+	Location string // path to the folder to export
 }
 
-/* Returns 0 if all items were succesfully exported, otherwise returns the index of an item that errored first. */
-/* 'export_from' is the index in items list of the first item to be exported.
-   All items with index less than export_from are ignored. */
-func (r *RmExport) ExportMultiple(ctx context.Context, tablet_addr string, items []DocInfo, export_from int) int {
+type RmExport struct {
+	Options RmExportOptions
+
+	ctx context.Context
+
+	items       []DocInfo
+	export_from int // index of the first item to be exported
+
+	tablet_addr        string
+	wrappingFolderName string
+	client             http.Client
+}
+
+func InitExport(ctx context.Context, options RmExportOptions, items []DocInfo, tablet_addr string) RmExport {
 	client := http.Client{
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
@@ -33,53 +43,73 @@ func (r *RmExport) ExportMultiple(ctx context.Context, tablet_addr string, items
 		Timeout: 5 * time.Minute,
 	}
 
-	runtime.LogInfof(ctx, "Export format: %v", r.Format)
-	runtime.LogInfof(ctx, "In export location, using a wrapper folder with a name: %v", r.WrappingFolderName)
+	t := strings.ReplaceAll(time.Now().Format(time.DateTime), ":", "-")
+	folderName := "rM Export (" + t + ")"
 
-	// possible states of export: downloading, finished, error
-	for i, item := range items {
-		if i < export_from {
-			continue
-		}
-		runtime.EventsEmit(ctx, "downloading", item.Id)
-		runtime.LogInfof(ctx, "Downloading file with id=%v", item.Id)
-
-		err := r.export(&client, tablet_addr, item)
-
-		if err == nil {
-			runtime.LogInfof(ctx, "Finished downloading file with id=%v", item.Id)
-			runtime.EventsEmit(ctx, "finished", item.Id)
-		} else {
-			runtime.LogInfof(ctx, "Error while downloading file with id=%v, error=%v", item.Id, err.Error())
-			runtime.EventsEmit(ctx, "error", item.Id, err.Error())
-			return i
-		}
+	return RmExport{
+		Options:            options,
+		ctx:                ctx,
+		items:              items,
+		export_from:        0,
+		tablet_addr:        tablet_addr,
+		wrappingFolderName: folderName,
+		client:             client,
 	}
-
-	return 0
 }
 
-func (r *RmExport) export(client *http.Client, tablet_addr string, item DocInfo) error {
+/*
+Exports all items passed in Init() method.
+Calls the callbacks when:
+* item started downloading;
+* item download has finished;
+* item download has failed.
+
+Supports retries.
+In case the last export succeeded on all items, it starts the export again from the first item;
+otherwise, the export starts from the first failed item.
+*/
+func (r *RmExport) Export(started, finished func(item DocInfo), failed func(item DocInfo, err error)) {
+	runtime.LogInfof(r.ctx, "Export format: %v", r.Options.Format)
+	runtime.LogInfof(r.ctx, "In export location, using a wrapper folder with a name: %v", r.wrappingFolderName)
+
+	for i := r.export_from; i < len(r.items); i++ {
+		item := r.items[i]
+		started(item)
+
+		err := r.exportOne(item)
+
+		if err == nil {
+			finished(item)
+		} else {
+			r.export_from = i
+			failed(item, err)
+			return
+		}
+	}
+}
+
+func (r *RmExport) exportOne(item DocInfo) error {
 	if item.IsFolder {
 		return nil
 	}
 
-	out, err := r.createFile(r.WrappingFolderName, item)
+	out, err := r.createFile(r.wrappingFolderName, item)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	url := "http://" + tablet_addr + "/download/" + item.Id + "/" + r.Format
-	resp, err := client.Get(url)
+	url := "http://" + r.tablet_addr + "/download/" + item.Id + "/" + r.Options.Format
+	resp, err := r.client.Get(url)
+
+	if err != nil {
+		return err
+	}
 
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("tablet returned HTTP code %d", resp.StatusCode)
 	}
 
-	if err != nil {
-		return err
-	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(out, resp.Body)
@@ -89,11 +119,11 @@ func (r *RmExport) export(client *http.Client, tablet_addr string, item DocInfo)
 
 func (r *RmExport) createFile(folderName string, item DocInfo) (*os.File, error) {
 	itemPath := *item.Path
-	if path.Ext(itemPath) != "."+r.Format {
-		itemPath = itemPath + "." + r.Format
+	if path.Ext(itemPath) != "."+r.Options.Format {
+		itemPath = itemPath + "." + r.Options.Format
 	}
 
-	path := filepath.Join(filepath.FromSlash(r.Location), folderName, itemPath)
+	path := filepath.Join(filepath.FromSlash(r.Options.Location), folderName, itemPath)
 	dir, _ := filepath.Split(path)
 
 	/* Permission 0755: The owner can read, write, execute.

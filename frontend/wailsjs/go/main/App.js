@@ -38,6 +38,10 @@ export function GetTabletFolderSelection(arg1) {
   return window['go']['main']['App']['GetTabletFolderSelection'](arg1);
 }
 
+export function InitExport() {
+  return window['go']['main']['App']['InitExport']();
+}
+
 export function IsIpValid(arg1) {
   return window['go']['main']['App']['IsIpValid'](arg1);
 }

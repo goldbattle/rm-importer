@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"rm-exporter/backend"
 	"slices"
-	"strings"
-	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -19,8 +17,8 @@ type App struct {
 	tablet_addr string
 	selection   backend.FileSelection
 
-	rm_export   backend.RmExport
-	export_from int
+	rm_export      backend.RmExport
+	export_options backend.RmExportOptions
 }
 
 //go:embed wails.json
@@ -35,7 +33,6 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.export_from = -1
 }
 
 func (a *App) GetAppVersion() string {
@@ -71,21 +68,40 @@ func (a *App) IsIpValid(s string) bool {
 	return backend.IsIpValid(s)
 }
 
-func (a *App) SetExportOptions(export backend.RmExport) {
-	a.rm_export = export
+type RmExportOptions struct {
+	Format   string
+	Location string
 }
 
-func (a *App) GetExportOptions() backend.RmExport {
-	return a.rm_export
+func (a *App) SetExportOptions(options backend.RmExportOptions) {
+	a.export_options = options
+}
+
+func (a *App) GetExportOptions() backend.RmExportOptions {
+	return a.export_options
+}
+
+func (a *App) InitExport() {
+	a.rm_export = backend.InitExport(a.ctx, a.export_options, a.GetCheckedFiles(), a.tablet_addr)
 }
 
 func (a *App) Export() {
-	files := a.GetCheckedFiles()
-	if a.export_from == -1 {
-		t := strings.ReplaceAll(time.Now().Format(time.DateTime), ":", "-")
-		a.rm_export.WrappingFolderName = "rM Export (" + t + ")"
+	started := func(item backend.DocInfo) {
+		runtime.LogInfof(a.ctx, "Started file id=%v", item.Id)
+		runtime.EventsEmit(a.ctx, "started", item.Id)
 	}
-	a.export_from = a.rm_export.ExportMultiple(a.ctx, a.tablet_addr, files, a.export_from)
+
+	finished := func(item backend.DocInfo) {
+		runtime.LogInfof(a.ctx, "Finished file id=%v", item.Id)
+		runtime.EventsEmit(a.ctx, "finished", item.Id)
+	}
+
+	failed := func(item backend.DocInfo, err error) {
+		runtime.LogInfof(a.ctx, "Failed file id=%v, error: %v", item.Id, err)
+		runtime.EventsEmit(a.ctx, "failed", item.Id, err.Error())
+	}
+
+	a.rm_export.Export(started, finished, failed)
 }
 
 func (a *App) OnItemSelect(id backend.DocId, selection bool) {
