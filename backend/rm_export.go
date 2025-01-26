@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -71,6 +72,11 @@ func (r *RmExport) export(client *http.Client, tablet_addr string, item DocInfo)
 
 	url := "http://" + tablet_addr + "/download/" + item.Id + "/" + r.Format
 	resp, err := client.Get(url)
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("tablet returned HTTP code %d", resp.StatusCode)
+	}
+
 	if err != nil {
 		return err
 	}
