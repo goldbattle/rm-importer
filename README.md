@@ -1,16 +1,39 @@
-# README
+# rm-exporter
 
-## About
+https://github.com/user-attachments/assets/be7a0298-769c-4d6f-b366-477aef66df74
 
-This is the official Wails Svelte-TS template.
+As you might know, reMarkable supports exporting notes locally through the USB connection.
 
-## Live Development
+Unfortunately, the default local export has a few flaws:
+  * Large notes (10MB+) often can't be exported, **the UI doesn't wait for long enough for a note to download**;
+  * Downloading a folder is not possible; only notes one-by-one.
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+This tool aims to fix those problems.
 
-## Building
+## Features
+* Supports exporting as many folders & notes as you want;
+* Can download both .pdf and .rmdoc;
+* Retries the download **from the last failed note**;
+* Waits for large notes long enough;
+* Doesn't require reMarkable account or internet connection;
+* Works with out of the box reMarkable software;
+* Has a nice GUI.
 
-To build a redistributable, production mode package, use `wails build`.
+## Usage
+Releases for Windows/MacOS/Linux are available on the 'Releases' tab of the repository.
+
+The tool is built with [wailsv2](https://github.com/wailsapp/wails). The UI is implemented in Typescript/Svelte, file downloading itself is done in Golang.
+
+### Supported rM software version
+Around 3.10+, around that version the local server requests got updated.
+
+Tested on Version 3.16.2.3 on reMarkable 2.
+
+### Steps before running the `rm-exporter`
+* Enable USB connection in the Storage settings. Without the permission the app can't find the tablet;
+* For long exports with large number of files, turn off Sleep Mode in the Battery settings. For some reason the local export doesn't prevent the tablet from going to sleep.
+
+### Building steps
+1. Install [wails v2](https://wails.io/docs/gettingstarted/installation).
+2. Clone the project
+3. `wails build`
