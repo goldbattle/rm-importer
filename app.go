@@ -102,7 +102,7 @@ func (a *App) Export() {
 		runtime.EventsEmit(a.ctx, "failed", item.Id, err.Error())
 	}
 
-	a.rm_export.Export(started, finished, failed)
+	a.rm_export.Export(a.ctx, started, finished, failed)
 }
 
 func (a *App) OnItemSelect(id backend.DocId, selection bool) {

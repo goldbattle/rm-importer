@@ -24,8 +24,6 @@ type RmExportOptions struct {
 type RmExport struct {
 	Options RmExportOptions
 
-	ctx context.Context
-
 	items       []DocInfo
 	export_from int // index of the first item to be exported
 
@@ -49,7 +47,6 @@ func InitExport(ctx context.Context, options RmExportOptions, items []DocInfo, t
 
 	return RmExport{
 		Options:            options,
-		ctx:                ctx,
 		items:              items,
 		export_from:        0,
 		tablet_addr:        tablet_addr,
@@ -69,15 +66,15 @@ Supports retries.
 In case the last export succeeded on all items, it starts the export again from the first item;
 otherwise, the export starts from the first failed item.
 */
-func (r *RmExport) Export(started, finished func(item DocInfo), failed func(item DocInfo, err error)) {
-	runtime.LogInfof(r.ctx, "[%v] Export format: %v", time.Now().UTC(), r.Options.Format)
-	runtime.LogInfof(r.ctx, "[%v] In export location, using a wrapper folder with a name: %v", time.Now(), r.wrappingFolderName)
+func (r *RmExport) Export(ctx context.Context, started, finished func(item DocInfo), failed func(item DocInfo, err error)) {
+	runtime.LogInfof(ctx, "[%v] Export format: %v", time.Now().UTC(), r.Options.Format)
+	runtime.LogInfof(ctx, "[%v] In export location, using a wrapper folder with a name: %v", time.Now().UTC(), r.wrappingFolderName)
 
 	for i := r.export_from; i < len(r.items); i++ {
 		item := r.items[i]
 		started(item)
 
-		err := r.exportOne(item)
+		err := r.exportOne(ctx, item)
 
 		if err == nil {
 			finished(item)
@@ -89,8 +86,8 @@ func (r *RmExport) Export(started, finished func(item DocInfo), failed func(item
 	}
 }
 
-func (r *RmExport) lookupDir(id DocId) error {
-	runtime.LogInfof(r.ctx, "[%v] looking up dir, id=%v", time.Now().UTC(), id)
+func (r *RmExport) lookupDir(ctx context.Context, id DocId) error {
+	runtime.LogInfof(ctx, "[%v] looking up dir, id=%v", time.Now().UTC(), id)
 
 	url := "http://" + r.tablet_addr + "/documents/" + id
 
@@ -102,9 +99,9 @@ func (r *RmExport) lookupDir(id DocId) error {
 		return err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (U; Linux x86_64; en-US) Gecko/20100101 Firefox/133.0")
-	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (U; Linux x86_64; en-US) Gecko/20100101 Firefox/133.0")
 	_, err = r.client.Do(req)
 
 	if err != nil {
@@ -114,15 +111,15 @@ func (r *RmExport) lookupDir(id DocId) error {
 	return nil
 }
 
-func (r *RmExport) exportOne(item DocInfo) error {
+func (r *RmExport) exportOne(ctx context.Context, item DocInfo) error {
 	time.Sleep(250 * time.Millisecond)
-	err := r.lookupDir(item.ParentId)
+	err := r.lookupDir(ctx, item.ParentId)
 	if err != nil {
 		return err
 	}
 
 	time.Sleep(250 * time.Millisecond)
-	err = r.download(item)
+	err = r.download(ctx, item)
 	if err != nil {
 		return err
 	}
@@ -130,11 +127,11 @@ func (r *RmExport) exportOne(item DocInfo) error {
 	return nil
 }
 
-func (r *RmExport) download(item DocInfo) error {
+func (r *RmExport) download(ctx context.Context, item DocInfo) error {
 	if item.IsFolder {
 		return nil
 	}
-	runtime.LogInfof(r.ctx, "[%v] downloading an item, id=%v", time.Now().UTC(), item.Id)
+	runtime.LogInfof(ctx, "[%v] downloading an item, id=%v", time.Now().UTC(), item.Id)
 
 	out, err := r.createFile(r.wrappingFolderName, item)
 	if err != nil {
@@ -149,9 +146,9 @@ func (r *RmExport) download(item DocInfo) error {
 		return err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (U; Linux x86_64; en-US) Gecko/20100101 Firefox/133.0")
-	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (U; Linux x86_64; en-US) Gecko/20100101 Firefox/133.0")
 	resp, err := r.client.Do(req)
 
 	if err != nil {
