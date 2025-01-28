@@ -80,9 +80,16 @@ func readDocs(tablet_addr string) ([]DocInfo, error) {
 		directories = directories[1:]
 
 		url := "http://" + tablet_addr + "/documents/" + id
-		content_type := "application/json"
 
-		resp, err := client.Post(url, content_type, &bytes.Buffer{})
+		req, err := http.NewRequest(http.MethodPost, url, &bytes.Buffer{})
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Accept", "*/*")
+		req.Header.Set("Connection", "keep-alive")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (U; Linux x86_64; en-US) Gecko/20100101 Firefox/133.0")
+
+		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err
 		}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"rm-exporter/backend"
 	"slices"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -87,17 +88,17 @@ func (a *App) InitExport() {
 
 func (a *App) Export() {
 	started := func(item backend.DocInfo) {
-		runtime.LogInfof(a.ctx, "Started file id=%v", item.Id)
+		runtime.LogInfof(a.ctx, "[%v] Started file id=%v", time.Now().UTC(), item.Id)
 		runtime.EventsEmit(a.ctx, "started", item.Id)
 	}
 
 	finished := func(item backend.DocInfo) {
-		runtime.LogInfof(a.ctx, "Finished file id=%v", item.Id)
+		runtime.LogInfof(a.ctx, "[%v] Finished file id=%v", time.Now().UTC(), item.Id)
 		runtime.EventsEmit(a.ctx, "finished", item.Id)
 	}
 
 	failed := func(item backend.DocInfo, err error) {
-		runtime.LogInfof(a.ctx, "Failed file id=%v, error: %v", item.Id, err)
+		runtime.LogInfof(a.ctx, "[%v] Failed file id=%v, error: %v", time.Now().UTC(), item.Id, err)
 		runtime.EventsEmit(a.ctx, "failed", item.Id, err.Error())
 	}
 
