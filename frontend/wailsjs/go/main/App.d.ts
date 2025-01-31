@@ -14,11 +14,13 @@ export function GetCheckedFilesCount():Promise<number>;
 
 export function GetExportOptions():Promise<backend.RmExportOptions>;
 
+export function GetFolder(arg1:string):Promise<Array<backend.DocInfo>>;
+
+export function GetFolderSelection(arg1:string):Promise<Array<backend.SelectionInfo>>;
+
+export function GetItemSelection(arg1:string):Promise<backend.SelectionInfo>;
+
 export function GetPaths(arg1:Array<string>):Promise<Array<string>>;
-
-export function GetTabletFolder(arg1:string):Promise<Array<backend.DocInfo>>;
-
-export function GetTabletFolderSelection(arg1:string):Promise<Array<backend.SelectionInfo>>;
 
 export function InitExport():Promise<void>;
 
@@ -26,6 +28,6 @@ export function IsIpValid(arg1:string):Promise<boolean>;
 
 export function OnItemSelect(arg1:string,arg2:boolean):Promise<void>;
 
-export function ReadTabletDocs(arg1:string):Promise<void>;
+export function ReadDocs(arg1:string):Promise<void>;
 
 export function SetExportOptions(arg1:backend.RmExportOptions):Promise<void>;

@@ -125,6 +125,7 @@ func (f *FileSelection) GetFolderSelection(id DocId) []SelectionInfo {
 	for _, id := range f.Children[id] {
 		result = append(result, SelectionInfo{id, f.DocSelection[id]})
 	}
+	result = append(result, SelectionInfo{id, f.DocSelection[id]})
 	return result
 }
 

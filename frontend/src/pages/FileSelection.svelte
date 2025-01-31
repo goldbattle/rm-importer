@@ -1,12 +1,14 @@
 <script lang="ts">
     import { Button, Checkbox, Listgroup, Navbar, P, ToolbarButton, Tooltip } from "flowbite-svelte";
     import { ArrowUpOutline, FileLinesSolid, FolderSolid } from "flowbite-svelte-icons";
-    import { GetTabletFolder, GetTabletFolderSelection, OnItemSelect, GetCheckedFilesCount } from "../../wailsjs/go/main/App";
+    import { GetFolder, GetFolderSelection, GetItemSelection, OnItemSelect, GetCheckedFilesCount } from "../../wailsjs/go/main/App";
     import { push } from "svelte-spa-router";
     import { backend } from "../../wailsjs/go/models";
+    import FileSelectionHeader from "./FileSelectionHeader.svelte";
+    import FileSelectionList from "./FileSelectionList.svelte";
     type DocInfo = backend.DocInfo;
     
-    let id = $state("");
+    let folderId = $state("");
     let path: string[] = $state([]);
     let items: DocInfo[] = $state([]);
 
@@ -22,10 +24,10 @@
 
     // onIdUpdate
     $effect(() => {
-        GetTabletFolder(id).then((result) => {
+        GetFolder(folderId).then((result) => {
             items = result;
         });
-        GetTabletFolderSelection(id).then((result) => {
+        GetFolderSelection(folderId).then((result) => {
             checked = {}
             for (const item of result) {
                 checked[item.Id] = item.Status
@@ -33,34 +35,19 @@
         });
     });
 
-    const checkUpdate = (item: DocInfo, value: boolean | undefined) => {
-        let select;
-        if (value) {
-            checked[item.Id] = SELECTED;
-            select = true;
-        } else {
-            checked[item.Id] = UNSELECTED;
-            select = false;
-        }
-        OnItemSelect(item.Id, select)
-        .then(() => GetCheckedFilesCount().then((count: number) => {
-                export_disabled = (count === 0);
-            }));
-    };
-
     const onBack = () => {
         if (path.length > 0) {
-            id = path[path.length - 1];
+            folderId = path[path.length - 1];
             path.pop();
         } else {
-            id = '';
+            folderId = '';
         }
     };
 
     const onItemClick = (item: DocInfo) => {
         if (item.IsFolder) {
-            path.push(id);
-            id = item.Id;
+            path.push(folderId);
+            folderId = item.Id;
         }
     };
 
@@ -68,52 +55,49 @@
         //storeCheckedFiles();
         push('/export-confirmation');
     };
+
+    const isItemChecked = (id: string) => {
+        return checked[id] === SELECTED;
+    };
+
+    const isItemIndeterminate = (id: string) => {
+        return checked[id] === INDETERMINATE;
+    };
+
+    const itemCheckUpdate = (id: string, value: boolean | undefined) => {
+        let select;
+        if (value) {
+            checked[id] = SELECTED;
+            select = true;
+        } else {
+            checked[id] = UNSELECTED;
+            select = false;
+        }
+        OnItemSelect(id, select)
+            .then(() => {
+                if (id === folderId) {
+                    GetFolderSelection(folderId).then((result) => {
+                        checked = {}
+                        for (const item of result) {
+                            checked[item.Id] = item.Status
+                        }
+                    });
+                } else {
+                    GetItemSelection(folderId).then((result) => {
+                        checked[result.Id] = result.Status;
+                    })
+                }
+                GetCheckedFilesCount().then((count: number) => {
+                    export_disabled = (count === 0);
+                })
+            });
+    };
 </script>
 
 <div style="height: fit-content;">
-    <nav class="bg-blue-50 text-blue-800 py-2.5 w-full sticky top-0 h-14">
-        <div class="w-full h-full flex flex-row items-center">
-            <div class="flex-1">
-                <div class="relative left-11 top-0">
-                    {#if path.length !== 0}
-                        <ToolbarButton color="blue" name="Back" onclick={onBack}> 
-                                <ArrowUpOutline class="w-7 h-7" />
-                        </ToolbarButton>
-                    {/if}
-                </div>
-            </div>
-            <h1 class="font-bold mx-auto">Choose files to export</h1>
-            <div class="flex-1">
-                <div class="float-right mr-11">
-                    <Checkbox id="folder-checkbox" indeterminate={true} class="w-4 h-4"></Checkbox>
-                    <!--<Tooltip triggeredBy="#folder-checkbox">Select everything in current folder</Tooltip>-->
-                </div>
-            </div>
-        </div>
-    </nav>
+    <FileSelectionHeader id={folderId} {path} {onBack} {isItemChecked} {isItemIndeterminate} {itemCheckUpdate}/>
     <main class="pl-10 pr-10 pt-3 pb-3">
-        {#if items.length > 0}
-        <Listgroup {items} let:item active={false}>
-            <div class="flex flex-row justify-start items-center">
-                
-                {#key [id, checked[""]]}
-                <Checkbox bind:checked={() => checked[item.Id] === SELECTED, (v) => checkUpdate(item, v)}
-                          indeterminate={checked[item.Id] === INDETERMINATE}
-                          class="mr-4 w-4 h-4" />
-                {/key}
-
-                <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
-                     onclick={() => onItemClick(item)}>
-                    {#if item.IsFolder}
-                        <FolderSolid class="mr-0.5" size="lg" />
-                    {:else}
-                        <FileLinesSolid class="mr-0.5" size="lg" />
-                    {/if}
-                    <P size="xl">{item.Name}</P>
-                </div>
-            </div>
-        </Listgroup>
-        {/if}
+        <FileSelectionList {items} {isItemChecked} {isItemIndeterminate} {itemCheckUpdate} {onItemClick}/>
     </main>
     <div class="fixed bottom-7 right-10">
         <Button pill size="xl" disabled={export_disabled}

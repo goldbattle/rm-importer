@@ -45,7 +45,11 @@ func (a *App) GetAppVersion() string {
 	return m["info"].(map[string]interface{})["productVersion"].(string)
 }
 
-func (a *App) ReadTabletDocs(tablet_addr string) error {
+func (a *App) IsIpValid(s string) bool {
+	return backend.IsIpValid(s)
+}
+
+func (a *App) ReadDocs(tablet_addr string) error {
 	a.tablet_addr = tablet_addr
 
 	err := a.rm_reader.Read(tablet_addr)
@@ -57,16 +61,24 @@ func (a *App) ReadTabletDocs(tablet_addr string) error {
 	return nil
 }
 
-func (a *App) GetTabletFolder(id backend.DocId) []backend.DocInfo {
+func (a *App) GetFolder(id backend.DocId) []backend.DocInfo {
 	return a.rm_reader.GetFolder(id)
 }
 
-func (a *App) GetTabletFolderSelection(id backend.DocId) []backend.SelectionInfo {
+func (a *App) GetFolderSelection(id backend.DocId) []backend.SelectionInfo {
 	return a.selection.GetFolderSelection(id)
 }
 
-func (a *App) IsIpValid(s string) bool {
-	return backend.IsIpValid(s)
+func (a *App) GetItemSelection(id backend.DocId) backend.SelectionInfo {
+	return a.selection.GetItemSelection(id)
+}
+
+func (a *App) OnItemSelect(id backend.DocId, selection bool) {
+	a.selection.Select(id, selection)
+}
+
+func (a *App) GetCheckedFilesCount() int {
+	return a.selection.GetCheckedFilesCount()
 }
 
 type RmExportOptions struct {
@@ -105,10 +117,6 @@ func (a *App) Export() {
 	a.rm_export.Export(a.ctx, started, finished, failed)
 }
 
-func (a *App) OnItemSelect(id backend.DocId, selection bool) {
-	a.selection.Select(id, selection)
-}
-
 /* Includes path for every checked file */
 func (a *App) GetCheckedFiles() []backend.DocInfo {
 	ids := a.selection.GetCheckedFiles()
@@ -127,10 +135,6 @@ func (a *App) GetCheckedFiles() []backend.DocInfo {
 		return 1
 	})
 	return files
-}
-
-func (a *App) GetCheckedFilesCount() int {
-	return a.selection.GetCheckedFilesCount()
 }
 
 func (a *App) GetPaths(ids []backend.DocId) []string {
