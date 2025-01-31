@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Checkbox, Listgroup, Navbar, P, ToolbarButton } from "flowbite-svelte";
+    import { Button, Checkbox, Listgroup, Navbar, P, ToolbarButton, Tooltip } from "flowbite-svelte";
     import { ArrowUpOutline, FileLinesSolid, FolderSolid } from "flowbite-svelte-icons";
     import { GetTabletFolder, GetTabletFolderSelection, OnItemSelect, GetCheckedFilesCount } from "../../wailsjs/go/main/App";
     import { push } from "svelte-spa-router";
@@ -71,13 +71,11 @@
 </script>
 
 <div style="height: fit-content;">
-    <nav class="bg-blue-50 text-blue-800 py-2.5 w-full sticky top-0 h-16">
+    <nav class="bg-blue-50 text-blue-800 py-2.5 w-full sticky top-0 h-14">
         <div class="w-full h-full flex flex-row items-center">
             <div class="flex-1">
-                <div class="relative left-11">
-                    {#if path.length == 0}
-                        <Checkbox indeterminate={true} class="w-4 h-4" style="margin-left: 13px;"></Checkbox>
-                    {:else}
+                <div class="relative left-11 top-0">
+                    {#if path.length !== 0}
                         <ToolbarButton color="blue" name="Back" onclick={onBack}> 
                                 <ArrowUpOutline class="w-7 h-7" />
                         </ToolbarButton>
@@ -85,7 +83,12 @@
                 </div>
             </div>
             <h1 class="font-bold mx-auto">Choose files to export</h1>
-            <div class="flex-1"></div>
+            <div class="flex-1">
+                <div class="float-right mr-11">
+                    <Checkbox id="folder-checkbox" indeterminate={true} class="w-4 h-4"></Checkbox>
+                    <!--<Tooltip triggeredBy="#folder-checkbox">Select everything in current folder</Tooltip>-->
+                </div>
+            </div>
         </div>
     </nav>
     <main class="pl-10 pr-10 pt-3 pb-3">
@@ -96,15 +99,15 @@
                 {#key [id, checked[""]]}
                 <Checkbox bind:checked={() => checked[item.Id] === SELECTED, (v) => checkUpdate(item, v)}
                           indeterminate={checked[item.Id] === INDETERMINATE}
-                          class="mr-3 w-4 h-4" />
+                          class="mr-4 w-4 h-4" />
                 {/key}
 
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
                      onclick={() => onItemClick(item)}>
                     {#if item.IsFolder}
-                        <FolderSolid class="mr-1" size="lg" />
+                        <FolderSolid class="mr-0.5" size="lg" />
                     {:else}
-                        <FileLinesSolid class="mr-1" size="lg" />
+                        <FileLinesSolid class="mr-0.5" size="lg" />
                     {/if}
                     <P size="xl">{item.Name}</P>
                 </div>
