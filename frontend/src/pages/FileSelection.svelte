@@ -71,15 +71,23 @@
 </script>
 
 <div style="height: fit-content;">
-    <Navbar color="blue" class="sticky top-0">
-        <div class={path.length == 0 ? "invisible": ""}>
-            <ToolbarButton color="blue" name="Back" onclick={onBack}> <ArrowUpOutline class="w-7 h-7" /></ToolbarButton>
+    <nav class="bg-blue-50 text-blue-800 py-2.5 w-full sticky top-0 h-16">
+        <div class="w-full h-full flex flex-row items-center">
+            <div class="flex-1">
+                <div class="relative left-11">
+                    {#if path.length == 0}
+                        <Checkbox indeterminate={true} class="w-4 h-4" style="margin-left: 13px;"></Checkbox>
+                    {:else}
+                        <ToolbarButton color="blue" name="Back" onclick={onBack}> 
+                                <ArrowUpOutline class="w-7 h-7" />
+                        </ToolbarButton>
+                    {/if}
+                </div>
+            </div>
+            <h1 class="font-bold mx-auto">Choose files to export</h1>
+            <div class="flex-1"></div>
         </div>
-        <h1 class="font-bold">Choose files to export</h1>
-        <div>
-            <ToolbarButton class="invisible"><ArrowUpOutline class="w-7 h-7" /></ToolbarButton>
-        </div>
-    </Navbar>
+    </nav>
     <main class="pl-10 pr-10 pt-3 pb-3">
         {#if items.length > 0}
         <Listgroup {items} let:item active={false}>
@@ -88,7 +96,7 @@
                 {#key [id, checked[""]]}
                 <Checkbox bind:checked={() => checked[item.Id] === SELECTED, (v) => checkUpdate(item, v)}
                           indeterminate={checked[item.Id] === INDETERMINATE}
-                          class="mr-2" />
+                          class="mr-3 w-4 h-4" />
                 {/key}
 
                 <div class="flex flex-row justify-start items-center w-full hover:bg-gray-100"
