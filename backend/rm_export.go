@@ -8,9 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -42,7 +40,7 @@ func InitExport(ctx context.Context, options RmExportOptions, items []DocInfo, t
 		Timeout: 5 * time.Minute,
 	}
 
-	t := strings.ReplaceAll(time.Now().Format(time.DateTime), ":", "-")
+	t := time.Now().Format(time.DateTime)
 	folderName := "rM Export (" + t + ")"
 
 	return RmExport{
@@ -167,17 +165,17 @@ func (r *RmExport) download(ctx context.Context, item DocInfo) error {
 }
 
 func (r *RmExport) createFile(folderName string, item DocInfo) (*os.File, error) {
-	itemPath := *item.DisplayPath
-	if path.Ext(itemPath) != "."+r.Options.Format {
-		itemPath = itemPath + "." + r.Options.Format
+	path, err := getFilePath(r.Options.Location, folderName, item, r.Options.Format)
+	if err != nil {
+		return nil, err
 	}
 
-	path := filepath.Join(filepath.FromSlash(r.Options.Location), folderName, itemPath)
+	path = filepath.FromSlash(path)
 	dir, _ := filepath.Split(path)
 
 	/* Permission 0755: The owner can read, write, execute.
 	   Everyone else can read and execute but not modify the file.*/
-	err := os.MkdirAll(dir, 0755)
+	err = os.MkdirAll(dir, 0755)
 	if err != nil {
 		return nil, err
 	}
