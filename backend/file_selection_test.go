@@ -118,7 +118,7 @@ func TestCheckedFilesRoot(t *testing.T) {
 	f := initFileSelection()
 	f.Select("", true)
 
-	result := f.GetCheckedFiles()
+	result := f.GetCheckedItems()
 	expected := []DocId{"f1", "f2", "f3"}
 	slices.Sort(result)
 	slices.Sort(expected)
@@ -133,7 +133,7 @@ func TestCheckedFilesSub(t *testing.T) {
 	f.Select("dir2", true)
 	f.Select("f3", true)
 
-	result := f.GetCheckedFiles()
+	result := f.GetCheckedItems()
 	expected := []DocId{"f2", "f3"}
 	slices.Sort(result)
 	slices.Sort(expected)

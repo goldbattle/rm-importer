@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"rm-exporter/backend"
-	"slices"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -57,7 +56,7 @@ func (a *App) ReadDocs(tablet_addr string) error {
 		return err
 	}
 
-	a.selection = backend.NewFileSelection(a.rm_reader.GetChildren())
+	a.selection = backend.NewFileSelection(a.rm_reader.GetChildrenMap())
 	return nil
 }
 
@@ -119,26 +118,7 @@ func (a *App) Export() {
 
 /* Includes path for every checked file */
 func (a *App) GetCheckedFiles() []backend.DocInfo {
-	ids := a.selection.GetCheckedFiles()
-	files := a.rm_reader.GetElementsByIds(ids)
-	paths := a.rm_reader.GetPaths(ids)
-	for i := 0; i < len(files); i += 1 {
-		files[i].Path = &paths[i]
-	}
-	slices.SortFunc(files, func(i, j backend.DocInfo) int {
-		if *i.Path < *j.Path {
-			return -1
-		}
-		if *i.Path == *j.Path {
-			return 0
-		}
-		return 1
-	})
-	return files
-}
-
-func (a *App) GetPaths(ids []backend.DocId) []string {
-	return a.rm_reader.GetPaths(ids)
+	return a.rm_reader.GetCheckedFiles(&a.selection)
 }
 
 func (a *App) DirectoryDialog() string {

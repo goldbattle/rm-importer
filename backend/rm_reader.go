@@ -156,7 +156,24 @@ func (r *RmReader) GetFolder(id DocId) []DocInfo {
 	return []DocInfo{}
 }
 
-func (r *RmReader) GetElementsByIds(ids []DocId) []DocInfo {
+func (r *RmReader) GetCheckedFiles(selection *FileSelection) []DocInfo {
+	ids := selection.GetCheckedItems()
+	files := r.getElementsByIds(ids)
+	r.fillPaths(files)
+
+	slices.SortFunc(files, func(i, j DocInfo) int {
+		if *i.Path < *j.Path {
+			return -1
+		}
+		if *i.Path == *j.Path {
+			return 0
+		}
+		return 1
+	})
+	return files
+}
+
+func (r *RmReader) getElementsByIds(ids []DocId) []DocInfo {
 	result := []DocInfo{}
 	for _, id := range ids {
 		result = append(result, r.docById[id])
@@ -164,15 +181,19 @@ func (r *RmReader) GetElementsByIds(ids []DocId) []DocInfo {
 	return result
 }
 
-func (r *RmReader) GetElementById(id DocId) DocInfo {
-	return r.docById[id]
-}
-
-func (r *RmReader) GetChildren() map[DocId][]DocInfo {
+func (r *RmReader) GetChildrenMap() map[DocId][]DocInfo {
 	return r.children
 }
 
-func (r *RmReader) GetPath(id DocId) string {
+func (r *RmReader) fillPaths(items []DocInfo) {
+	for i, item := range items {
+		p := r.getPath(item)
+		items[i].Path = &p
+	}
+}
+
+func (r *RmReader) getPath(item DocInfo) string {
+	id := item.Id
 	l := []string{}
 	for id != "" {
 		item := r.docById[id]
@@ -181,12 +202,4 @@ func (r *RmReader) GetPath(id DocId) string {
 	}
 	slices.Reverse(l)
 	return strings.Join(l[:], "/")
-}
-
-func (r *RmReader) GetPaths(ids []DocId) []string {
-	result := []string{}
-	for _, id := range ids {
-		result = append(result, r.GetPath(id))
-	}
-	return result
 }

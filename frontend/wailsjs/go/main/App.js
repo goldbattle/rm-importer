@@ -38,10 +38,6 @@ export function GetItemSelection(arg1) {
   return window['go']['main']['App']['GetItemSelection'](arg1);
 }
 
-export function GetPaths(arg1) {
-  return window['go']['main']['App']['GetPaths'](arg1);
-}
-
 export function InitExport() {
   return window['go']['main']['App']['InitExport']();
 }

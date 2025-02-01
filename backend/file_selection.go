@@ -133,7 +133,7 @@ func (f *FileSelection) GetItemSelection(id DocId) SelectionInfo {
 	return SelectionInfo{id, f.DocSelection[id]}
 }
 
-func (f *FileSelection) GetCheckedFiles() []DocId {
+func (f *FileSelection) GetCheckedItems() []DocId {
 	result := []DocId{}
 	for id := range f.Files {
 		if f.DocSelection[id] == Selected {

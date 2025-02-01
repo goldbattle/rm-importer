@@ -20,8 +20,6 @@ export function GetFolderSelection(arg1:string):Promise<Array<backend.SelectionI
 
 export function GetItemSelection(arg1:string):Promise<backend.SelectionInfo>;
 
-export function GetPaths(arg1:Array<string>):Promise<Array<string>>;
-
 export function InitExport():Promise<void>;
 
 export function IsIpValid(arg1:string):Promise<boolean>;
