@@ -167,7 +167,7 @@ func (r *RmExport) download(ctx context.Context, item DocInfo) error {
 }
 
 func (r *RmExport) createFile(folderName string, item DocInfo) (*os.File, error) {
-	itemPath := *item.Path
+	itemPath := *item.DisplayPath
 	if path.Ext(itemPath) != "."+r.Options.Format {
 		itemPath = itemPath + "." + r.Options.Format
 	}

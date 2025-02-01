@@ -23,7 +23,8 @@ type DocInfo struct {
 	Bookmarked   bool
 	LastModified *time.Time
 	FileType     *string
-	Path         *string
+	DisplayPath  *string
+	TabletPath   []string
 }
 
 func parseDocsResponse(bytes []byte) ([]DocInfo, error) {
@@ -162,10 +163,10 @@ func (r *RmReader) GetCheckedFiles(selection *FileSelection) []DocInfo {
 	r.fillPaths(files)
 
 	slices.SortFunc(files, func(i, j DocInfo) int {
-		if *i.Path < *j.Path {
+		if *i.DisplayPath < *j.DisplayPath {
 			return -1
 		}
-		if *i.Path == *j.Path {
+		if *i.DisplayPath == *j.DisplayPath {
 			return 0
 		}
 		return 1
@@ -187,13 +188,15 @@ func (r *RmReader) GetChildrenMap() map[DocId][]DocInfo {
 
 func (r *RmReader) fillPaths(items []DocInfo) {
 	for i, item := range items {
-		p := r.getPath(item)
-		items[i].Path = &p
+		p := r.getDisplayPath(item)
+		items[i].DisplayPath = &p
+		items[i].TabletPath = r.getTabletPath(item)
 	}
 }
 
-func (r *RmReader) getPath(item DocInfo) string {
+func (r *RmReader) getTabletPath(item DocInfo) []string {
 	id := item.Id
+
 	l := []string{}
 	for id != "" {
 		item := r.docById[id]
@@ -201,5 +204,17 @@ func (r *RmReader) getPath(item DocInfo) string {
 		id = item.ParentId
 	}
 	slices.Reverse(l)
-	return strings.Join(l[:], "/")
+
+	return l
+}
+
+func (r *RmReader) getDisplayPath(item DocInfo) string {
+	tabletPath := r.getTabletPath(item)
+	for i, x := range tabletPath {
+		if strings.Contains(x, "/") {
+			tabletPath[i] = "'" + x + "'"
+		}
+	}
+
+	return strings.Join(tabletPath, "/")
 }

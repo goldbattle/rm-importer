@@ -83,7 +83,7 @@
         <Listgroup items={exportItems} let:item active={false}>
             <div class="flex flex-row justify-start items-center w-full">
                 <FileLinesSolid class="mr-1" size="lg" />
-                <P size="xl">{item.Path}</P>
+                <P size="xl">{item.DisplayPath}</P>
                 {#if exportItemState[item.Id] === "started"}
                     <Spinner class="ml-auto" />
                 {:else if exportItemState[item.Id] === "finished"}
