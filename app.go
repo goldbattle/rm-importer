@@ -113,7 +113,7 @@ func (a *App) Export() {
 		runtime.EventsEmit(a.ctx, "failed", item.Id, err.Error())
 	}
 
-	a.rm_export.Export(a.ctx, started, finished, failed)
+	a.rm_export.Export(started, finished, failed)
 }
 
 /* Includes path for every checked file */

@@ -15,7 +15,7 @@ Normalizes folderName and item.TabletPath.
 func getFilePath(location string, folderName string, item DocInfo, ext string) (string, error) {
 	itemPath := slices.Clone(item.TabletPath)
 	if len(itemPath) == 0 {
-		return "", fmt.Errorf("Item path is empty! id=%v", item.Id)
+		return "", fmt.Errorf("item path is empty! id=%v", item.Id)
 	}
 
 	last := itemPath[len(itemPath)-1]
