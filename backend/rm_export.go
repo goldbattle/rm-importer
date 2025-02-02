@@ -15,7 +15,8 @@ import (
 )
 
 type RmExportOptions struct {
-	Format   string // 'pdf' or 'rmdoc'
+	Pdf      bool
+	Rmdoc    bool
 	Location string // path to the folder to export
 }
 
@@ -69,22 +70,31 @@ In case the last export succeeded on all items, it starts the export again from 
 otherwise, the export starts from the first failed item.
 */
 func (r *RmExport) Export(started, finished func(item DocInfo), failed func(item DocInfo, err error)) {
-	runtime.LogInfof(r.ctx, "[%v] Export format: %v", time.Now().UTC(), r.Options.Format)
+	formats := []string{}
+	if r.Options.Rmdoc {
+		formats = append(formats, "rmdoc")
+	}
+	if r.Options.Pdf {
+		formats = append(formats, "pdf")
+	}
+
+	runtime.LogInfof(r.ctx, "[%v] Export formats: %v", time.Now().UTC(), formats)
 	runtime.LogInfof(r.ctx, "[%v] In export location, using a wrapper folder with a name: %v", time.Now().UTC(), r.wrappingFolderName)
 
 	for i := r.export_from; i < len(r.items); i++ {
 		item := r.items[i]
 		started(item)
 
-		err := r.exportOne(item)
-
-		if err == nil {
-			finished(item)
-		} else {
-			r.export_from = i
-			failed(item, err)
-			return
+		for _, format := range formats {
+			err := r.exportOne(item, format)
+			if err != nil {
+				r.export_from = i
+				failed(item, err)
+				return
+			}
 		}
+
+		finished(item)
 	}
 }
 
@@ -113,7 +123,7 @@ func (r *RmExport) lookupDir(id DocId) error {
 	return nil
 }
 
-func (r *RmExport) exportOne(item DocInfo) error {
+func (r *RmExport) exportOne(item DocInfo, format string) error {
 	time.Sleep(150 * time.Millisecond)
 	err := r.lookupDir(item.ParentId)
 	if err != nil {
@@ -121,7 +131,7 @@ func (r *RmExport) exportOne(item DocInfo) error {
 	}
 
 	time.Sleep(150 * time.Millisecond)
-	err = r.download(item)
+	err = r.download(item, format)
 	if err != nil {
 		return err
 	}
@@ -129,19 +139,19 @@ func (r *RmExport) exportOne(item DocInfo) error {
 	return nil
 }
 
-func (r *RmExport) download(item DocInfo) error {
+func (r *RmExport) download(item DocInfo, format string) error {
 	if item.IsFolder {
 		return nil
 	}
 	runtime.LogInfof(r.ctx, "[%v] downloading an item, id=%v", time.Now().UTC(), item.Id)
 
-	out, err := r.createFile(r.wrappingFolderName, item)
+	out, err := r.createFile(r.wrappingFolderName, item, format)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	url := "http://" + r.tablet_addr + "/download/" + item.Id + "/" + r.Options.Format
+	url := "http://" + r.tablet_addr + "/download/" + item.Id + "/" + format
 
 	req, err := http.NewRequest(http.MethodGet, url, &bytes.Buffer{})
 	if err != nil {
@@ -168,8 +178,8 @@ func (r *RmExport) download(item DocInfo) error {
 	return err
 }
 
-func (r *RmExport) createFile(folderName string, item DocInfo) (*os.File, error) {
-	path, err := r.paths.getFilePathUnique(r.Options.Location, folderName, item.TabletPath, r.Options.Format)
+func (r *RmExport) createFile(folderName string, item DocInfo, format string) (*os.File, error) {
+	path, err := r.paths.getFilePathUnique(r.Options.Location, folderName, item.TabletPath, format)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find a path, id=%v, (%v)", item.Id, err.Error())
 	}

@@ -20,9 +20,23 @@
         });
     
     GetExportOptions()
-        .then((result: backend.RmExport) => {
+        .then((result: backend.RmExportOptions) => {
             exportOptions = result;
         });
+
+    let formats: string = $derived.by(() => {
+        let result = "";
+        if (exportOptions.Pdf) {
+            result += "pdf";
+        }
+        if (exportOptions.Rmdoc) {
+            if (result.length != 0) {
+                result += ",";
+            }
+            result += "rmdoc";
+        }
+        return result;
+    });
     
     InitExport()
         .then(() => {
@@ -76,7 +90,7 @@
     
     <main class="pr-7 pl-7 mt-3 w-full">
     
-        <h2 class="text-md">Format: {exportOptions["Format"]}</h2>
+        <h2 class="text-md">Formats: {formats}</h2>
         <h2 class="text-md mb-3">Location: {exportOptions["Location"]}</h2>
     
         {#if exportItems.length > 0}

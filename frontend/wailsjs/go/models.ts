@@ -48,7 +48,8 @@ export namespace backend {
 		}
 	}
 	export class RmExportOptions {
-	    Format: string;
+	    Pdf: boolean;
+	    Rmdoc: boolean;
 	    Location: string;
 	
 	    static createFrom(source: any = {}) {
@@ -57,7 +58,8 @@ export namespace backend {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Format = source["Format"];
+	        this.Pdf = source["Pdf"];
+	        this.Rmdoc = source["Rmdoc"];
 	        this.Location = source["Location"];
 	    }
 	}

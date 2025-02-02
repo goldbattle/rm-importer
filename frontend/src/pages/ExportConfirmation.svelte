@@ -6,7 +6,8 @@
     import { push } from "svelte-spa-router";
     type DocInfo = backend.DocInfo;
 
-    let format = $state('pdf');
+    let pdf = $state(true);
+    let rmdoc = $state(true);
     let location = $state("");
     let items: DocInfo[] = $state([]);
 
@@ -22,7 +23,7 @@
     };
 
     const onProceed = () => {
-        SetExportOptions({location, format}).then(() => {
+        SetExportOptions({pdf, rmdoc, location}).then(() => {
             push('/export');
         });
     };
@@ -45,15 +46,15 @@
 
     <main class="pr-7 pl-7 mt-3 w-full">
         <div class="flex flex-row justify-items-start items-center">
-            <h2 class="w-20 text-md">Format:</h2>
+            <h2 class="w-20 text-md">Formats:</h2>
             <ButtonGroup class="space-x-px">
-                <Button pill color="green" onclick={() => format = 'pdf'}>
-                    {#if format==='pdf'}
+                <Button pill color="green" onclick={() => pdf = !pdf}>
+                    {#if pdf}
                         <CheckOutline />
                     {/if}.pdf
                 </Button>
-                <Button pill color="purple" onclick={() => format = 'rmdoc'}>
-                    {#if format==='rmdoc'}
+                <Button pill color="purple" onclick={() => rmdoc = !rmdoc}>
+                    {#if rmdoc}
                         <CheckOutline />
                     {/if}.rmdoc
                 </Button>
@@ -75,6 +76,6 @@
         {/if}
     </main>
     <div class="fixed bottom-7 right-10">
-        <Button disabled={!location} pill size="xl" onclick={onProceed}>Proceed</Button>
+        <Button disabled={!location || (!pdf && !rmdoc)} pill size="xl" onclick={onProceed}>Proceed</Button>
     </div>
 </div>
