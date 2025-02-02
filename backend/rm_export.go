@@ -114,13 +114,13 @@ func (r *RmExport) lookupDir(id DocId) error {
 }
 
 func (r *RmExport) exportOne(item DocInfo) error {
-	time.Sleep(250 * time.Millisecond)
+	time.Sleep(150 * time.Millisecond)
 	err := r.lookupDir(item.ParentId)
 	if err != nil {
 		return err
 	}
 
-	time.Sleep(250 * time.Millisecond)
+	time.Sleep(150 * time.Millisecond)
 	err = r.download(item)
 	if err != nil {
 		return err
