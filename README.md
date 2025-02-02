@@ -1,6 +1,6 @@
 # rm-exporter
 
-https://github.com/user-attachments/assets/be7a0298-769c-4d6f-b366-477aef66df74
+https://github.com/user-attachments/assets/0996b7c3-85a7-45ea-90d7-cfabd989c5dc
 
 As you might know, reMarkable supports exporting notes locally through the USB connection.
 
