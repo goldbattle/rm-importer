@@ -163,13 +163,11 @@ func (r *RmReader) GetCheckedFiles(selection *FileSelection) []DocInfo {
 	r.fillPaths(files)
 
 	slices.SortFunc(files, func(i, j DocInfo) int {
-		if *i.DisplayPath < *j.DisplayPath {
-			return -1
+		c := strings.Compare(*i.DisplayPath, *j.DisplayPath)
+		if c != 0 {
+			return c
 		}
-		if *i.DisplayPath == *j.DisplayPath {
-			return 0
-		}
-		return 1
+		return strings.Compare(i.Id, j.Id)
 	})
 	return files
 }

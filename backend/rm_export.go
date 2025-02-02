@@ -29,6 +29,7 @@ type RmExport struct {
 	wrappingFolderName string
 	client             http.Client
 	ctx                context.Context
+	paths              Paths
 }
 
 func InitExport(ctx context.Context, options RmExportOptions, items []DocInfo, tablet_addr string) RmExport {
@@ -52,6 +53,7 @@ func InitExport(ctx context.Context, options RmExportOptions, items []DocInfo, t
 		wrappingFolderName: folderName,
 		client:             client,
 		ctx:                ctx,
+		paths:              initPaths(),
 	}
 }
 
@@ -167,11 +169,12 @@ func (r *RmExport) download(item DocInfo) error {
 }
 
 func (r *RmExport) createFile(folderName string, item DocInfo) (*os.File, error) {
-	path, err := getFilePath(r.Options.Location, folderName, item, r.Options.Format)
+	path, err := r.paths.getFilePathUnique(r.Options.Location, folderName, item.TabletPath, r.Options.Format)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find a path, id=%v, (%v)", item.Id, err.Error())
 	}
-	runtime.LogDebugf(r.ctx, "[%v] exporting to path %v", time.Now().UTC(), item.Id)
+
+	runtime.LogDebugf(r.ctx, "[%v] exporting to path %v, id=%v", time.Now().UTC(), path, item.Id)
 
 	path = filepath.FromSlash(path)
 	dir, _ := filepath.Split(path)
