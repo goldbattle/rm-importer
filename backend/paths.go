@@ -22,33 +22,29 @@ Returns a unique file path for a file.
 	Appends a number to a file name to make a file name unique.
 */
 func (ps *Paths) getFilePathUnique(location string, folderName string, itemPath []string, ext string) (string, error) {
-	p, err := getFilePath(location, folderName, itemPath, ext)
-	if err != nil {
-		return "", err
-	}
-
-	count := ps.duplicatePaths[p]
-	ps.duplicatePaths[p] += 1
-	if count == 0 {
-		return p, nil
-	}
-	/* If count is > 0, need to modify the name and call getFilePath again */
-
-	if len(itemPath) == 0 {
-		return "", fmt.Errorf("item path is empty")
-	}
 	itemPath = slices.Clone(itemPath)
+	for {
+		p, err := getFilePath(location, folderName, itemPath, ext)
+		if err != nil {
+			return "", err
+		}
 
-	name := itemPath[len(itemPath)-1]
-	nameExt := path.Ext(name)
-	newName := strings.TrimSuffix(name, nameExt) + fmt.Sprintf("-%d", count) + nameExt
-	itemPath[len(itemPath)-1] = newName
+		count := ps.duplicatePaths[p]
+		ps.duplicatePaths[p] += 1
+		if count == 0 {
+			return p, nil
+		}
+		/* If count is > 0, need to modify the name and call getFilePath again */
 
-	p, err = getFilePath(location, folderName, itemPath, ext)
-	if err != nil {
-		return "", err
+		if len(itemPath) == 0 {
+			return "", fmt.Errorf("item path is empty")
+		}
+
+		name := itemPath[len(itemPath)-1]
+		nameExt := path.Ext(name)
+		newName := strings.TrimSuffix(name, nameExt) + fmt.Sprintf("-%d", count) + nameExt
+		itemPath[len(itemPath)-1] = newName
 	}
-	return p, nil
 }
 
 /*
