@@ -1,8 +1,17 @@
 # rm-importer
 
-https://github.com/user-attachments/assets/0996b7c3-85a7-45ea-90d7-cfabd989c5dc
+<img width="50%" alt="example_00" src="https://github.com/user-attachments/assets/89d08f9f-2bbe-4311-baac-2bd83098bb42" /><img width="50%" alt="example_01" src="https://github.com/user-attachments/assets/4a9d18c0-1727-49bd-b941-4c93ea31e024" />
+
 
 A comprehensive tool for managing files on your reMarkable device with both export and import capabilities.
+
+## Import Features (NEW!, WINDOWS ONLY)
+* **100% vibe coded** - Don't count on much, but it seems to work?
+* **SSH-based file uploads** - Upload PDF files directly to your reMarkable device
+* **SSH file listing** - View all documents and folders on your device via SSH instead of HTTP
+* **Direct device integration** - Files are immediately available on your reMarkable
+* **Automatic metadata generation** - Creates proper metadata and content files so they show up in the on-device GUI
+
 
 ## Export Features
 * Supports exporting as many folders & notes as you want;
@@ -13,13 +22,6 @@ A comprehensive tool for managing files on your reMarkable device with both expo
 * Works with out of the box reMarkable software;
 * Has a nice GUI.
 
-## Import Features (NEW!, WINDOWS ONLY)
-* **SSH-based file uploads** - Upload PDF files directly to your reMarkable device
-* **Local file management** - Browse and select files from your computer
-* **SSH file listing** - View all documents and folders on your device via SSH
-* **Direct device integration** - Files are immediately available on your reMarkable
-* **No cloud dependency** - All operations work locally without internet connection
-* **Automatic metadata generation** - Creates proper metadata and content files for seamless integration
 
 ## Usage
 Releases for Windows/MacOS/Linux are available on the 'Releases' tab of the repository.
