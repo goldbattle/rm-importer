@@ -17,13 +17,13 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'rm-exporter'
+          - name: 'rm-importer'
             platform:  'linux/amd64'
             os: 'ubuntu-latest'
-          - name: 'rm-exporter'
+          - name: 'rm-importer'
             platform:  'windows/amd64'
             os: 'windows-latest'
-          - name: 'rm-exporter'
+          - name: 'rm-importer'
             platform:  'darwin/universal'
             os: 'macos-latest'
 
@@ -43,5 +43,5 @@ jobs:
           package: true
           go-version: '1.22'
           node-version: '20.x'
-          macos-build-name: 'rm-exporter'
+          macos-build-name: 'rm-importer'
           ubuntu24: "-tags webkit2_41"

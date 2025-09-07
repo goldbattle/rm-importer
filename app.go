@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"rm-exporter/backend"
+	"rm-importer/backend"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -272,28 +272,28 @@ func (a *App) FileDialog() string {
 	return file
 }
 
-func (a *App) UploadFileSSH(localPath, fileName, parentId string) error {
+func (a *App) UploadFileSSH(localPath, fileName, parentId string) (string, error) {
 	runtime.LogInfof(a.ctx, "[APP] UploadFileSSH called: localPath=%s, fileName=%s, parentId=%s", localPath, fileName, parentId)
 
 	if a.ssh_reader == nil {
 		runtime.LogError(a.ctx, "[APP] SSH connection not established")
-		return fmt.Errorf("SSH connection not established")
+		return "", fmt.Errorf("SSH connection not established")
 	}
 
 	if a.safe_mode {
 		runtime.LogError(a.ctx, "[APP] Upload blocked: safe mode is enabled")
-		return fmt.Errorf("upload blocked: safe mode is enabled")
+		return "", fmt.Errorf("upload blocked: safe mode is enabled")
 	}
 
 	runtime.LogInfo(a.ctx, "[APP] Starting file upload...")
-	err := a.ssh_reader.UploadFile(localPath, fileName, parentId)
+	uuid, err := a.ssh_reader.UploadFile(localPath, fileName, parentId)
 	if err != nil {
 		runtime.LogErrorf(a.ctx, "[APP] Upload failed: %v", err)
-		return err
+		return "", err
 	}
 
-	runtime.LogInfo(a.ctx, "[APP] Upload completed successfully")
-	return nil
+	runtime.LogInfof(a.ctx, "[APP] Upload completed successfully with UUID: %s", uuid)
+	return uuid, nil
 }
 
 func (a *App) CreateFolderSSH(folderName, parentId string) error {

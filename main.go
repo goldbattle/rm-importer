@@ -17,7 +17,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "rm-exporter",
+		Title:  "rm-importer",
 		Width:  700,
 		Height: 700,
 		AssetServer: &assetserver.Options{

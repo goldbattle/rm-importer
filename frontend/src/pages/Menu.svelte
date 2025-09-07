@@ -5,7 +5,7 @@
   import { push } from 'svelte-spa-router';
   import { BrowserOpenURL } from '../../wailsjs/runtime/runtime.js';
 
-  const source = "https://github.com/chopikus/rm-exporter";
+  const source = "https://github.com/chopikus/rm-importer";
   let version = $state("");
 
   GetAppVersion().then((v: string) => {
@@ -145,7 +145,7 @@
 {/key}
 
 <main class="flex flex-col h-full justify-center items-center content-center">
-  <P size="3xl">rm-exporter</P>
+  <P size="3xl">rm-importer</P>
   
   <!-- Settings Panel -->
   <div class="w-96 mb-6 p-4 bg-gray-50 rounded-lg border">

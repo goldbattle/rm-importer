@@ -144,8 +144,8 @@ func (r *SSHReader) getDisplayPath(item DocInfo) string {
 	return strings.Join(tabletPath, "/")
 }
 
-// UploadFile uploads a file using the SSH importer
-func (r *SSHReader) UploadFile(localPath, fileName, parentId string) error {
+// UploadFile uploads a file using the SSH importer and returns the generated UUID
+func (r *SSHReader) UploadFile(localPath, fileName, parentId string) (string, error) {
 	importer := NewSSHImporter(r.connection)
 	return importer.UploadFile(localPath, fileName, parentId)
 }

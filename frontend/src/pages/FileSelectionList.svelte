@@ -90,13 +90,13 @@
                 showNotification(`Uploading "${fileName}"... Please wait.`, 'info');
                 console.log("Starting upload:", filePath, "to folder:", folderId);
                 
-                await UploadFileSSH(filePath, fileName, folderId);
-                console.log("Upload completed successfully");
+                const actualUUID = await UploadFileSSH(filePath, fileName, folderId);
+                console.log("Upload completed successfully with UUID:", actualUUID);
                 
                 // Create a new DocInfo object for the uploaded file
                 const visibleName = fileName.replace(/\.pdf$/i, ''); // Remove .pdf extension for display
                 const newFile: DocInfo = {
-                    Id: crypto.randomUUID(), // Generate a temporary UUID for the UI
+                    Id: actualUUID, // Use the actual UUID from the device
                     Name: visibleName, // Use the name without extension
                     IsFolder: false,
                     ParentId: folderId,

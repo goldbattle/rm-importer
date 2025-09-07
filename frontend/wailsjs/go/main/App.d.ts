@@ -52,4 +52,4 @@ export function SetSafeMode(arg1:boolean):Promise<void>;
 
 export function TestSSHConnection(arg1:string,arg2:string,arg3:string):Promise<void>;
 
-export function UploadFileSSH(arg1:string,arg2:string,arg3:string):Promise<void>;
+export function UploadFileSSH(arg1:string,arg2:string,arg3:string):Promise<string>;

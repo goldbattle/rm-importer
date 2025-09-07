@@ -1,4 +1,4 @@
-module rm-exporter
+module rm-importer
 
 go 1.23.0
 
