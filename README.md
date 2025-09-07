@@ -29,21 +29,26 @@ Releases for Windows/MacOS/Linux are available on the 'Releases' tab of the repo
 The tool is built with [wailsv2](https://github.com/wailsapp/wails). The UI is implemented in Typescript/Svelte, file operations are done in Golang.
 
 ### Supported rM software version
-Around 3.10+, around that version the local server requests got updated.
+Tested on Version 3.3.2.1666 on reMarkable 2.
 
-Tested on Version 3.16.2.3 on reMarkable 2.
+### Prerequisites for Import (SSH Mode)
+* Ensure your device and computer are on the same network or use USB cable
+* Default SSH credentials: username `root`, password `[your device password]`
+  * NOTE: You can find your IP and ssh pass in `Help > Copyrights and licenses" at the very bottom
+  * https://remarkable.guide/guide/access/ssh.html
+* Install PuTTY's `plink` utility (included with PuTTY installation)
 
 ### Prerequisites for Export (USB Mode)
 * Enable USB connection in the Storage settings. Without the permission the app can't find the tablet;
 * For long exports with large number of files, turn off Sleep Mode in the Battery settings. For some reason the local export doesn't prevent the tablet from going to sleep.
 
-### Prerequisites for Import (SSH Mode)
-* Enable SSH access on your reMarkable device (Developer Options → SSH)
-* Install PuTTY's `plink` utility (included with PuTTY installation)
-* Ensure your device and computer are on the same network
-* Default SSH credentials: username `root`, password `[your device password]`
 
 ### Building steps
 1. Install [wails v2](https://wails.io/docs/gettingstarted/installation).
 2. Clone the project
 3. `wails build`
+4. Launch via `./build/bin/rm-importer.exe` after build
+5. Debug via `wails dev` to get logs
+
+
+
