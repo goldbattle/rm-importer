@@ -10,6 +10,12 @@
     "name": "Igor Chovpan"
   },
   "info": {
-    "productVersion": "0.2.0"
+    "productVersion": "0.3.0"
+  },
+  "window": {
+    "width": 1200,
+    "height": 800,
+    "minWidth": 800,
+    "minHeight": 600
   }
 }

@@ -92,12 +92,19 @@
                 })
             });
     };
+
+    const addItemToList = (newItem: DocInfo) => {
+        // Add the new item to the current items list
+        items = [...items, newItem];
+        // Initialize the item as unselected
+        checked[newItem.Id] = UNSELECTED;
+    };
 </script>
 
 <div style="height: fit-content;">
     <FileSelectionHeader id={folderId} {path} {onBack} {isItemChecked} {isItemIndeterminate} {itemCheckUpdate}/>
     <main class="pl-10 pr-10 pt-3 pb-3">
-        <FileSelectionList {items} {isItemChecked} {isItemIndeterminate} {itemCheckUpdate} {onItemClick}/>
+        <FileSelectionList {items} {isItemChecked} {isItemIndeterminate} {itemCheckUpdate} {onItemClick} {folderId} {addItemToList}/>
     </main>
     <div class="fixed bottom-7 right-10">
         <Button pill size="xl" disabled={export_disabled}
